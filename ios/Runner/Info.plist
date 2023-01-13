@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -36,6 +38,8 @@
 	<string>Use your camera to take selfie, click photos as attachments</string>
 	<key>NSContactsUsageDescription</key>
 	<string>Helps finding relevant contacts for better networking</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Please authorize to use the app</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Track your voyage while you are not even using the app</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -48,8 +52,8 @@
 	<string>Use your library images as attachments</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Speak and let the app type on behalf of you</string>
-	<key>NSFaceIDUsageDescription</key>
-    <string>Please authorize to use the app</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
@@ -74,9 +78,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
 </dict>
 </plist>
