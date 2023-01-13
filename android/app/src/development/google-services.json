@@ -1,0 +1,154 @@
+{
+  "project_info": {
+    "project_number": "111740542",
+    "project_id": "thinkhub-app",
+    "storage_bucket": "thinkhub-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111740542:android:835967ea2fc042257b3a2f",
+        "android_client_info": {
+          "package_name": "com.thinkpalm.thinkhub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuyTWsNzZ0Z8TVuIkhJXYcGzVsJNLGrUI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "111740542-3mqljijsjb0dq2eer0a21dk19kn27f0m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thinkpalm.thinkhub.qa"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111740542:android:c537521fccb2cf637b3a2f",
+        "android_client_info": {
+          "package_name": "com.thinkpalm.thinkhub.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuyTWsNzZ0Z8TVuIkhJXYcGzVsJNLGrUI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "111740542-3mqljijsjb0dq2eer0a21dk19kn27f0m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thinkpalm.thinkhub.qa"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111740542:android:c64421924c9a4b497b3a2f",
+        "android_client_info": {
+          "package_name": "com.thinkpalm.thinkhub.qa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuyTWsNzZ0Z8TVuIkhJXYcGzVsJNLGrUI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "111740542-3mqljijsjb0dq2eer0a21dk19kn27f0m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thinkpalm.thinkhub.qa"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111740542:android:dcc5146102f31ef87b3a2f",
+        "android_client_info": {
+          "package_name": "com.thinkpalm.thinkhub.stage"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuyTWsNzZ0Z8TVuIkhJXYcGzVsJNLGrUI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "111740542-3mqljijsjb0dq2eer0a21dk19kn27f0m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thinkpalm.thinkhub.qa"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

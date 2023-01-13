@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "111740542",
+    "project_id": "thinkhub-app",
+    "storage_bucket": "thinkhub-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111740542:android:835967ea2fc042257b3a2f",
+        "android_client_info": {
+          "package_name": "com.thinkpalm.thinkhub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuyTWsNzZ0Z8TVuIkhJXYcGzVsJNLGrUI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
