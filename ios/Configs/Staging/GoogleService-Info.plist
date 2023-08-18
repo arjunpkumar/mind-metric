@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>111740542-l5aumma3caqeg3pbb11ff7moq3hor7ik.apps.googleusercontent.com</string>
+	<string>13937139114-s134b0p04sve27sjcc4jo4s2dl5i67kl.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.111740542-l5aumma3caqeg3pbb11ff7moq3hor7ik</string>
+	<string>com.googleusercontent.apps.13937139114-s134b0p04sve27sjcc4jo4s2dl5i67kl</string>
 	<key>API_KEY</key>
-	<string>AIzaSyC-olC1iEqV6wU-NYLx26arIwZOGySqA_Q</string>
+	<string>AIzaSyAoj7xYXphMghN_75lLtidnt0u0LrEaVfY</string>
 	<key>GCM_SENDER_ID</key>
-	<string>111740542</string>
+	<string>13937139114</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.thinkpalm.thinkhub.stage</string>
+	<string>com.thinkpalm.flutterbase.stage</string>
 	<key>PROJECT_ID</key>
-	<string>thinkhub-app</string>
+	<string>thinkplam-flutter-base</string>
 	<key>STORAGE_BUCKET</key>
-	<string>thinkhub-app.appspot.com</string>
+	<string>thinkplam-flutter-base.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:111740542:ios:a54b947018af80bc7b3a2f</string>
+	<string>1:13937139114:ios:4742089f2fe2471d399fd3</string>
 </dict>
 </plist>

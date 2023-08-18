@@ -1,34 +1,149 @@
 {
   "project_info": {
-    "project_number": "111740542",
-    "project_id": "thinkhub-app",
-    "storage_bucket": "thinkhub-app.appspot.com"
+    "project_number": "13937139114",
+    "project_id": "thinkplam-flutter-base",
+    "storage_bucket": "thinkplam-flutter-base.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:111740542:android:835967ea2fc042257b3a2f",
+        "mobilesdk_app_id": "1:13937139114:android:44824ef28b5593be399fd3",
         "android_client_info": {
-          "package_name": "com.thinkpalm.thinkhub"
+          "package_name": "com.thinkpalm.flutterbase"
         }
       },
       "oauth_client": [
         {
-          "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+          "client_id": "13937139114-b37h011ilc8r9lvs5mk0rhvmmm29kms2.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCuyTWsNzZ0Z8TVuIkhJXYcGzVsJNLGrUI"
+          "current_key": "AIzaSyBc5PYKBagANkYT4lD2LHDDjwZDFQvGAfI"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "111740542-2afumc0sm7p9q9au8q6c8bubmd2tf2oh.apps.googleusercontent.com",
+              "client_id": "13937139114-b37h011ilc8r9lvs5mk0rhvmmm29kms2.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "13937139114-5sunh2jm0sjoijd4jbrdjf3qkk4jqtv2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thinkpalm.flutterbase.dev"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:13937139114:android:f09c4dacedc44a98399fd3",
+        "android_client_info": {
+          "package_name": "com.thinkpalm.flutterbase.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "13937139114-b37h011ilc8r9lvs5mk0rhvmmm29kms2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBc5PYKBagANkYT4lD2LHDDjwZDFQvGAfI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "13937139114-b37h011ilc8r9lvs5mk0rhvmmm29kms2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "13937139114-5sunh2jm0sjoijd4jbrdjf3qkk4jqtv2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thinkpalm.flutterbase.dev"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:13937139114:android:4a10b114325a2d32399fd3",
+        "android_client_info": {
+          "package_name": "com.thinkpalm.flutterbase.qa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "13937139114-b37h011ilc8r9lvs5mk0rhvmmm29kms2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBc5PYKBagANkYT4lD2LHDDjwZDFQvGAfI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "13937139114-b37h011ilc8r9lvs5mk0rhvmmm29kms2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "13937139114-5sunh2jm0sjoijd4jbrdjf3qkk4jqtv2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thinkpalm.flutterbase.dev"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:13937139114:android:6bd1c00abdf6d17c399fd3",
+        "android_client_info": {
+          "package_name": "com.thinkpalm.flutterbase.stage"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "13937139114-b37h011ilc8r9lvs5mk0rhvmmm29kms2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBc5PYKBagANkYT4lD2LHDDjwZDFQvGAfI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "13937139114-b37h011ilc8r9lvs5mk0rhvmmm29kms2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "13937139114-5sunh2jm0sjoijd4jbrdjf3qkk4jqtv2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.thinkpalm.flutterbase.dev"
+              }
             }
           ]
         }
