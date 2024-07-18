@@ -15,7 +15,6 @@ import 'package:flutter_base/src/utils/regex_util.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 bool notNull(dynamic source) {
   return source != null;

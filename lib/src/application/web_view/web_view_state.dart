@@ -29,3 +29,9 @@ class WebViewState extends BaseBlocState {
     );
   }
 }
+
+class PagePopped extends WebViewState {
+  final String? url;
+
+  PagePopped(this.url);
+}

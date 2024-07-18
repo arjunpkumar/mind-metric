@@ -8,6 +8,8 @@ abstract class BaseBloc<Event extends BaseBlocEvent,
     State extends BaseBlocState> extends Bloc<Event, State> {
   final _message = PublishSubject<String>();
   final _dialogMessage = PublishSubject<String>();
+  final _noNetworkError = PublishSubject<void>();
+  bool _isDisposed = false;
 
   BaseBloc(super.initialState);
 
@@ -27,8 +29,14 @@ abstract class BaseBloc<Event extends BaseBlocEvent,
     }
   }
 
+  Stream<void> get noNetworkError => _noNetworkError;
+
+  bool get isDisposed => _isDisposed;
+
   void dispose() {
     _message.close();
     _dialogMessage.close();
+    _noNetworkError.close();
+    _isDisposed = true;
   }
 }

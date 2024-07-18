@@ -11,6 +11,7 @@ import 'package:flutter_base/src/presentation/core/base_state.dart';
 import 'package:flutter_base/src/presentation/core/theme/colors.dart';
 import 'package:flutter_base/src/presentation/widgets/dialog/app_dialog.dart';
 import 'package:flutter_base/src/presentation/widgets/loader_widget.dart';
+import 'package:flutter_base/src/utils/extensions.dart';
 import 'package:flutter_base/src/utils/file_util.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -123,7 +124,7 @@ class _WebViewPageState extends BaseState<WebViewPage> {
                     }
 
                     if (url.startsWith(_bloc!.alternateSuccessUrl ?? " ")) {
-                      await _displayTemporaryLoader();
+                      await _displayTemporaryLoader(context, state);
                     }
                   },
                 ),
@@ -142,15 +143,18 @@ class _WebViewPageState extends BaseState<WebViewPage> {
     }
   }
 
-  Future<void> _displayTemporaryLoader() async {
+  Future<void> _displayTemporaryLoader(
+    BuildContext context,
+    WebViewState state,
+  ) async {
     late BuildContext loaderContext;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         loaderContext = context;
-        return WillPopScope(
-          onWillPop: () async => false,
+        return PopScope(
+          canPop: state.canPop,
           child: const LoaderWidget(),
         );
       },
@@ -162,35 +166,45 @@ class _WebViewPageState extends BaseState<WebViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        if (_bloc!.isBackConfirmationRequired) {
-          final url = await _controller?.currentUrl();
-          if (!mounted) return false;
-          if (!_bloc!.isPageLoading &&
-              (url?.startsWith(_bloc!.alternateSuccessUrl ?? ' ') ?? false)) {
-            Navigator.pop(context, url);
-            return false;
-          }
-
-          final result = await openAppDialog(
-            context,
-            title: S.current.labelCancelXConfirmation(_bloc!.title),
-            positiveButtonText: S.current.btnYesCancel,
-            negativeButtonText: S.current.btnNo,
-          );
-          if (result ?? false) {
-            _controller?.runJavaScript('window.stop();');
-          }
-          return result ?? false;
-        } else {
-          return !_bloc!.isPageLoading;
+    return BlocConsumer<WebViewBloc, WebViewState>(
+      bloc: _bloc,
+      listener: (context, state) {
+        if (state is PagePopped) {
+          Navigator.pop(this.context, state.url);
         }
       },
-      child: BlocBuilder<WebViewBloc, WebViewState>(
-        bloc: _bloc,
-        builder: (context, state) {
-          return Scaffold(
+      builder: (context, state) {
+        return PopScope(
+          canPop: state.canPop,
+          onPopInvoked: (didPop) async {
+            final url = await _controller?.currentUrl();
+            if (_bloc!.isBackConfirmationRequired) {
+              if (!mounted) return;
+              if (!_bloc!.isPageLoading &&
+                  (url?.startsWith(_bloc!.alternateSuccessUrl ?? ' ') ??
+                      false)) {
+                _bloc!.add(PopInvoked(url: url));
+              }
+
+              openAppDialog(
+                this.context,
+                title: S.current.labelCancelXConfirmation(_bloc!.title),
+                positiveButtonText: S.current.btnYesCancel,
+                negativeButtonText: S.current.btnNo,
+              ).then(
+                (value) {
+                  final result = toDefaultBool(value);
+                  if (result) {
+                    _controller?.runJavaScript('window.stop();');
+                    _bloc!.add(PopInvoked(url: url));
+                  }
+                },
+              );
+            } else if (!_bloc!.isPageLoading) {
+              _bloc!.add(PopInvoked(url: url));
+            }
+          },
+          child: Scaffold(
             appBar: AppBar(
               title: Text(
                 _bloc!.title.toUpperCase(),
@@ -200,9 +214,9 @@ class _WebViewPageState extends BaseState<WebViewPage> {
               ),
             ),
             body: _getBodyLayout(context, state),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

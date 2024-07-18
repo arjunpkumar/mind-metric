@@ -30,7 +30,8 @@ class WebViewBloc extends BaseBloc<WebViewEvent, WebViewState> {
     this.alternateSuccessUrl,
     this.failureUrl,
     this.isBackConfirmationRequired = false,
-  }) : super(WebViewState()) {
+  }) : super(WebViewState()..canPop = false) {
+    on<PopInvoked>((event, emit) => _onPopInvoked(event, emit));
     on<WebViewEvent>(
       (event, emit) => emit(
         state.copyWith()..processState = event.processState,
@@ -42,6 +43,10 @@ class WebViewBloc extends BaseBloc<WebViewEvent, WebViewState> {
     );
 
     add(InitWebViewEvent());
+  }
+
+  void _onPopInvoked(PopInvoked event, Emitter<WebViewState> emit) {
+    emit(PagePopped(event.url)..canPop = true);
   }
 
   Future<void> _onWebViewInit(
