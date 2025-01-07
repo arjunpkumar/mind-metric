@@ -11,6 +11,8 @@ import 'package:flutter_base/src/presentation/core/base_state.dart';
 import 'package:flutter_base/src/presentation/core/theme/colors.dart';
 import 'package:flutter_base/src/presentation/widgets/dialog/app_dialog.dart';
 import 'package:flutter_base/src/presentation/widgets/loader_widget.dart';
+import 'package:flutter_base/src/utils/extensions.dart';
+import 'package:flutter_base/src/utils/file_util.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -61,7 +63,7 @@ class _WebViewPageState extends BaseState<WebViewPage> {
                         return NavigationDecision.prevent;
                       } else if (request.url
                           .startsWith(_bloc!.failureUrl ?? " ")) {
-                        Navigator.pop(context, null);
+                        Navigator.pop(context);
                         return NavigationDecision.prevent;
                       }
                     }
@@ -122,7 +124,7 @@ class _WebViewPageState extends BaseState<WebViewPage> {
                     }
 
                     if (url.startsWith(_bloc!.alternateSuccessUrl ?? " ")) {
-                      await _displayTemporaryLoader();
+                      await _displayTemporaryLoader(context, state);
                     }
                   },
                 ),
@@ -132,7 +134,7 @@ class _WebViewPageState extends BaseState<WebViewPage> {
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
               );
             if (!kIsWeb && Platform.isAndroid) {
-              _initAndroidFileUploader();
+              _initAndroidFileUploader(context);
             }
             _bloc!.add(WebViewControllerInitiatedEvent());
           }
@@ -141,15 +143,18 @@ class _WebViewPageState extends BaseState<WebViewPage> {
     }
   }
 
-  Future<void> _displayTemporaryLoader() async {
+  Future<void> _displayTemporaryLoader(
+    BuildContext context,
+    WebViewState state,
+  ) async {
     late BuildContext loaderContext;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         loaderContext = context;
-        return WillPopScope(
-          onWillPop: () async => false,
+        return PopScope(
+          canPop: state.canPop,
           child: const LoaderWidget(),
         );
       },
@@ -161,35 +166,45 @@ class _WebViewPageState extends BaseState<WebViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        if (_bloc!.isBackConfirmationRequired) {
-          final url = await _controller?.currentUrl();
-          if (!mounted) return false;
-          if (!_bloc!.isPageLoading &&
-              (url?.startsWith(_bloc!.alternateSuccessUrl ?? ' ') ?? false)) {
-            Navigator.pop(context, url);
-            return false;
-          }
-
-          final result = await openAppDialog(
-            context,
-            title: S.current.labelCancelXConfirmation(_bloc!.title),
-            positiveButtonText: S.current.btnYesCancel,
-            negativeButtonText: S.current.btnNo,
-          );
-          if (result ?? false) {
-            _controller?.runJavaScript('window.stop();');
-          }
-          return result ?? false;
-        } else {
-          return !_bloc!.isPageLoading;
+    return BlocConsumer<WebViewBloc, WebViewState>(
+      bloc: _bloc,
+      listener: (context, state) {
+        if (state is PagePopped) {
+          Navigator.pop(this.context, state.url);
         }
       },
-      child: BlocBuilder<WebViewBloc, WebViewState>(
-        bloc: _bloc,
-        builder: (context, state) {
-          return Scaffold(
+      builder: (context, state) {
+        return PopScope(
+          canPop: state.canPop,
+          onPopInvoked: (didPop) async {
+            final url = await _controller?.currentUrl();
+            if (_bloc!.isBackConfirmationRequired) {
+              if (!mounted) return;
+              if (!_bloc!.isPageLoading &&
+                  (url?.startsWith(_bloc!.alternateSuccessUrl ?? ' ') ??
+                      false)) {
+                _bloc!.add(PopInvoked(url: url));
+              }
+
+              openAppDialog(
+                this.context,
+                title: S.current.labelCancelXConfirmation(_bloc!.title),
+                positiveButtonText: S.current.btnYesCancel,
+                negativeButtonText: S.current.btnNo,
+              ).then(
+                (value) {
+                  final result = toDefaultBool(value);
+                  if (result) {
+                    _controller?.runJavaScript('window.stop();');
+                    _bloc!.add(PopInvoked(url: url));
+                  }
+                },
+              );
+            } else if (!_bloc!.isPageLoading) {
+              _bloc!.add(PopInvoked(url: url));
+            }
+          },
+          child: Scaffold(
             appBar: AppBar(
               title: Text(
                 _bloc!.title.toUpperCase(),
@@ -199,9 +214,9 @@ class _WebViewPageState extends BaseState<WebViewPage> {
               ),
             ),
             body: _getBodyLayout(context, state),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -229,14 +244,35 @@ class _WebViewPageState extends BaseState<WebViewPage> {
     );
   }
 
-  Future<void> _initAndroidFileUploader() async {
+  Future<void> _initAndroidFileUploader(BuildContext context) async {
     if (Platform.isAndroid) {
       final controller =
           _controller!.platform as webview_android.AndroidWebViewController;
-      await controller.setOnShowFileSelector(
-        (params) => _bloc!.initAndroidFilePicker(params),
-      );
+      await controller.setOnShowFileSelector(_androidFilePicker);
     }
+  }
+
+  Future<List<String>> _androidFilePicker(
+    webview_android.FileSelectorParams params,
+  ) async {
+    final xFile = await _bloc!.fileUtil
+        .openDocumentPickerXFile(
+      context,
+      // useFileSelectorOnly: true,
+    )
+        .onError(
+      (e, stackTrace) {
+        debugPrint(e.toString());
+        return null;
+      },
+    );
+
+    if (xFile == null) {
+      return [];
+    }
+
+    final path = FileUtil.getProcessedFileUri(xFile.path);
+    return [path];
   }
 }
 

@@ -210,6 +210,26 @@ class S {
     );
   }
 
+  /// `Image`
+  String get labelImage {
+    return Intl.message(
+      'Image',
+      name: 'labelImage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Document`
+  String get labelDocument {
+    return Intl.message(
+      'Document',
+      name: 'labelDocument',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No Network Available`
   String get labelNoNetworkAvailable {
     return Intl.message(

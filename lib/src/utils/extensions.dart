@@ -9,9 +9,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_base/config.dart';
 import 'package:flutter_base/src/core/app_constants.dart';
+import 'package:flutter_base/src/utils/file_util.dart';
+import 'package:flutter_base/src/utils/guard.dart';
+import 'package:flutter_base/src/utils/regex_util.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 bool notNull(dynamic source) {
   return source != null;
@@ -154,10 +157,12 @@ String? formatDate(DateTime? dateTime, {String format = 'dd/MM/yyyy'}) {
 }
 
 String? getTimeFormat(DateTime? dateTime, BuildContext? context) {
-  if (dateTime == null || context == null) {
-    return null;
-  }
-  return TimeOfDay.fromDateTime(dateTime).format(context);
+  return Guard.asNullable<String>(() {
+    if (dateTime == null || context == null) {
+      return null;
+    }
+    return TimeOfDay.fromDateTime(dateTime).format(context);
+  });
 }
 
 String? durationInDaysHoursMinutes(DateTime? fromTime, DateTime? toTime) {
@@ -174,12 +179,19 @@ String? durationInDaysHoursMinutes(DateTime? fromTime, DateTime? toTime) {
   ].join(" ");
 }
 
-Future<String> absolutePath(String relativePath) async {
-  final dir = await getApplicationDocumentsDirectory();
-
-  final path = !kIsWeb && Platform.isWindows
-      ? p.join(dir.path, "/FlutterBase")
-      : dir.path;
+Future<String> absolutePath(
+  String relativePath, {
+  bool useCache = false,
+  bool useExternal = false,
+  bool useDownload = false,
+}) async {
+  final path = useCache
+      ? await FileUtil.getApplicationTempPath()
+      : useExternal
+          ? await FileUtil.getExternalPath()
+          : useDownload
+              ? await FileUtil.getDownloadPath()
+              : await FileUtil.getApplicationPath();
   return p.joinAll([path, relativePath]);
 }
 
@@ -267,6 +279,14 @@ extension StringFormatting on String {
   int toInt() {
     return int.tryParse(this) ?? 0;
   }
+
+  String formatNumber() {
+    return (toInt() < 10) ? "0$this" : this;
+  }
+
+  String addQueryParam(String key, dynamic value) {
+    return "$this${contains('?') ? '&' : '?'}$key=$value";
+  }
 }
 
 Map<String, dynamic> toGenericMap(dynamic map) {
@@ -291,9 +311,9 @@ List<Map<String, dynamic>> toGenericMapList(dynamic list) {
   );
 }
 
-DateTime toDefaultDateTime(dynamic date) {
-  if (date is! String?) return DateTime(1970);
-  return DateTime.tryParse(date ?? '') ?? DateTime(1970);
+DateTime toDefaultDateTime(dynamic date, {DateTime? defaultValue}) {
+  if (date is! String?) return defaultValue ?? DateTime(1970);
+  return DateTime.tryParse(date ?? '') ?? defaultValue ?? DateTime(1970);
 }
 
 DateTime? toDateTime(dynamic date) {
@@ -306,25 +326,25 @@ String? toString(dynamic value) {
   return value.toString();
 }
 
-String toDefaultString(dynamic value) {
-  if (value == null) return "";
-  return value?.toString() ?? "";
+String toDefaultString(dynamic value, {String defaultValue = ""}) {
+  if (value == null) return defaultValue;
+  return value?.toString() ?? defaultValue;
 }
 
 int? toInt(dynamic value) {
   return value?.toString().toInt();
 }
 
-int toDefaultInt(dynamic value) {
-  return value?.toString().toInt() ?? 0;
+int toDefaultInt(dynamic value, {int defaultValue = 0}) {
+  return value?.toString().toInt() ?? defaultValue;
 }
 
 double? toDouble(dynamic value) {
   return value?.toString().toDouble();
 }
 
-double toDefaultDouble(dynamic value) {
-  return value?.toString().toDouble() ?? 0.0;
+double toDefaultDouble(dynamic value, {double defaultValue = 0.0}) {
+  return value?.toString().toDouble() ?? defaultValue;
 }
 
 bool? toBool(dynamic value) {
@@ -332,9 +352,13 @@ bool? toBool(dynamic value) {
   return value;
 }
 
-bool toDefaultBool(dynamic value) {
-  if (value is! bool) return false;
+bool toDefaultBool(dynamic value, {bool defaultValue = false}) {
+  if (value is! bool) return defaultValue;
   return value;
+}
+
+RegExp toRegex(String regex) {
+  return RegexUtil.toRegex(regex);
 }
 
 extension AmountFormat on double {
@@ -402,6 +426,21 @@ extension ListUtil on List {
       if (!list.contains(element)) return false;
     }
     return true;
+  }
+}
+
+extension FlutterSecureStorageUtil on FlutterSecureStorage {
+  Future<String?> checkAndRead(String key) async {
+    if (await containsKey(key: key)) {
+      return read(key: key);
+    }
+    return null;
+  }
+
+  Future<void> checkAndDelete(String key) async {
+    if (await containsKey(key: key)) {
+      return delete(key: key);
+    }
   }
 }
 

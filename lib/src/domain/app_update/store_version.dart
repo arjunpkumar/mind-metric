@@ -12,16 +12,16 @@ import 'package:package_info_plus/package_info_plus.dart';
 /// available in the Apple App Store or Google Play Store.
 class VersionStatus {
   /// The current version of the app.
-  final String localVersion;
+  final String? localVersion;
 
   /// The most recent version of the app in the store.
-  final String storeVersion;
+  final String? storeVersion;
 
   /// A link to the app store page where the app can be updated.
-  final String appStoreLink;
+  final String? appStoreLink;
 
   /// The release notes for the store version of the app.
-  final String releaseNotes;
+  final String? releaseNotes;
 
   /// True if the there is a more recent version of the app in the store.
   // bool get canUpdate => localVersion.compareTo(storeVersion).isNegative;
@@ -30,17 +30,20 @@ class VersionStatus {
     // assume version strings can be of the form xx.yy.zz
     // this implementation correctly compares local 1.10.1 to store 1.9.4
     try {
-      final localFields = localVersion.split('.');
-      final storeFields = storeVersion.split('.');
-      final StringBuffer localPad = StringBuffer();
-      final StringBuffer storePad = StringBuffer();
+      final localFields = localVersion!.split('.');
+      final storeFields = storeVersion!.split('.');
+      final localPad = StringBuffer();
+      final storePad = StringBuffer();
       for (int i = 0; i < storeFields.length; i++) {
         localPad.write(localFields[i].padLeft(3, '0'));
         storePad.write(storeFields[i].padLeft(3, '0'));
       }
       return localPad.toString().compareTo(storePad.toString()) < 0;
     } catch (e) {
-      return localVersion.compareTo(storeVersion).isNegative;
+      return localVersion
+          .toString()
+          .compareTo(storeVersion.toString())
+          .isNegative;
     }
   }
 

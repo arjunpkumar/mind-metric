@@ -39,7 +39,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> _init() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (kIsWeb || Platform.isWindows) {
+  if (kIsWeb || Platform.isWindows || Platform.isMacOS) {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
@@ -48,7 +48,7 @@ Future<void> _init() async {
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   }
 
-  if (kIsWeb || !Platform.isWindows) {
+  if (kIsWeb || !(Platform.isWindows || Platform.isMacOS)) {
     await FirebaseRemoteConfig.instance.ensureInitialized();
   }
 
@@ -73,27 +73,32 @@ Future<void> _init() async {
       if (Platform.isAndroid || Platform.isFuchsia) {
         Config.androidDeviceInfo = await DeviceInfoPlugin().androidInfo;
       }
-      if (Platform.isIOS || Platform.isMacOS) {
+      if (Platform.isIOS) {
         Config.iOSDeviceInfo = await DeviceInfoPlugin().iosInfo;
       }
     }
   }
 
   // Sync Configs
-  await Guard.runAsync(() async {
-    final configsRepository = ConfigRepository.instance();
+  await Guard.runAsync(
+    () async {
+      final configsRepository = ConfigRepository.instance();
 
-    if (kIsWeb || !Platform.isWindows) {
-      await Future.wait([
-        configsRepository.initConfig(),
-        configsRepository.syncConfig(),
-      ]);
-    } else if (Platform.isWindows) {
-      await provideRemoteConfigRepository().fetchAndUpdateRemoteConfigList();
-    }
-  });
+      if (kIsWeb || !(Platform.isWindows || Platform.isMacOS)) {
+        await configsRepository.initConfig();
+        await configsRepository.syncConfig();
+      } else if (Platform.isWindows || Platform.isMacOS) {
+        await provideRemoteConfigRepository().fetchAndUpdateRemoteConfigList();
+      }
+    },
+    onError: (e, s) async {
+      Guard.runAsync(() async {
+        await provideRemoteConfigRepository().fetchAndUpdateRemoteConfigList();
+      });
+    },
+  );
 
-/*  if(Config.appFlavor is! Production && Config.appMode != AppMode.release){
+  /*  if(Config.appFlavor is! Production && Config.appMode != AppMode.release){
     final driver = StorageServerDriver(
         bundleId: Config.packageInfo.packageName, //Used for identification
         port: 0, //Default 0, use 0 to automatically use a free port
@@ -179,10 +184,15 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       builder: (context, child) => Navigator(
         onGenerateRoute: (settings) {
           return MaterialPageRoute(
-            builder: (context) => AppVersionWidget(
-              configsRepository: ConfigRepository.instance(),
-              child: child!,
-            ),
+            builder: (context) {
+              if (kIsWeb || Platform.isWindows || Platform.isMacOS) {
+                return child!;
+              }
+              return AppVersionWidget(
+                configsRepository: ConfigRepository.instance(),
+                child: child!,
+              );
+            },
           );
         },
       ),

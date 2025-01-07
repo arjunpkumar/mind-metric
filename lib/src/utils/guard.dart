@@ -8,32 +8,45 @@ import 'package:flutter_base/src/utils/error_logger.dart';
 class Guard {
   Guard._();
 
-  static T withDefault<T>(T Function() fun, {required T defaultValue}) {
+  static T withDefault<T>(
+    T Function() fun, {
+    required T defaultValue,
+    Function(Object, StackTrace)? onError,
+  }) {
     try {
       return fun();
     } catch (e, s) {
       debugPrint(e.toString());
       ErrorLogger().recordError(exception: e, stackTrace: s);
+      onError?.call(e, s);
     }
     return defaultValue;
   }
 
-  static T? asNullable<T>(T? Function() fun) {
+  static T? asNullable<T>(
+    T? Function() fun, {
+    Function(Object, StackTrace)? onError,
+  }) {
     try {
       return fun();
     } catch (e, s) {
       debugPrint(e.toString());
       ErrorLogger().recordError(exception: e, stackTrace: s);
+      onError?.call(e, s);
     }
     return null;
   }
 
-  static Future<T?> asNullableAsync<T>(Future<T?> Function() fun) async {
+  static Future<T?> asNullableAsync<T>(
+    Future<T?> Function() fun, {
+    Function(Object, StackTrace)? onError,
+  }) async {
     try {
       return fun();
     } catch (e, s) {
       debugPrint(e.toString());
       ErrorLogger().recordError(exception: e, stackTrace: s);
+      onError?.call(e, s);
     }
     return null;
   }
@@ -41,31 +54,41 @@ class Guard {
   static Future<T> withDefaultAsync<T>(
     Future<T> Function() fun, {
     required T defaultValue,
+    Function(Object, StackTrace)? onError,
   }) async {
     try {
       return fun();
     } catch (e, s) {
       debugPrint(e.toString());
       ErrorLogger().recordError(exception: e, stackTrace: s);
+      onError?.call(e, s);
     }
     return defaultValue;
   }
 
-  static void run(Function() fun) {
+  static void run(
+    Function() fun, {
+    Function(Object, StackTrace)? onError,
+  }) {
     try {
       fun();
     } catch (e, s) {
       debugPrint(e.toString());
       ErrorLogger().recordError(exception: e, stackTrace: s);
+      onError?.call(e, s);
     }
   }
 
-  static Future<void> runAsync(Function() fun) async {
+  static Future<void> runAsync(
+    Function() fun, {
+    Function(Object, StackTrace)? onError,
+  }) async {
     try {
       await fun();
     } catch (e, s) {
       debugPrint(e.toString());
       ErrorLogger().recordError(exception: e, stackTrace: s);
+      onError?.call(e, s);
     }
   }
 }

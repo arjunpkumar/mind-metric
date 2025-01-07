@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_base/src/domain/database/core/app_database.dart';
@@ -13,18 +15,24 @@ class Logger {
   Logger._();
 
   void login(User user) {
-    _fireBaseAnalytics.setUserId(id: user.id);
-    _fireBaseAnalytics.logLogin();
+    if (kIsWeb || !Platform.isWindows) {
+      _fireBaseAnalytics.setUserId(id: user.id);
+      _fireBaseAnalytics.logLogin();
+    }
   }
 
   void logout() {
-    _fireBaseAnalytics.logEvent(name: LogEvents.logout);
-    setUserID(null);
-    _fireBaseAnalytics.setUserId(id: null);
+    if (kIsWeb || !Platform.isWindows) {
+      _fireBaseAnalytics.logEvent(name: LogEvents.logout);
+      setUserID(null);
+      _fireBaseAnalytics.setUserId();
+    }
   }
 
   void setCurrentScreen(String name) {
-    _fireBaseAnalytics.setCurrentScreen(screenName: name);
+    if (kIsWeb || !Platform.isWindows) {
+      _fireBaseAnalytics.logScreenView(screenName: name);
+    }
   }
 
   Future log(
@@ -32,22 +40,24 @@ class Logger {
     Map<String, dynamic>? eventParams, {
     bool isAnonymous = false,
   }) async {
-    Map<String, dynamic>? params;
-    if (!isAnonymous) {
-      params = eventParams ?? <String, dynamic>{};
-      /* final user = await userRepository.getActiveUser();
+    if (kIsWeb || !Platform.isWindows) {
+      var params = <String, dynamic>{};
+      if (!isAnonymous) {
+        params = eventParams ?? <String, dynamic>{};
+        /* final user = await userRepository.getActiveUser();
      if (user != null) {
         final details = await basicDetailRepository.getContent(user.id);
         params['cdc_number'] = user.cdcNumber ?? "";
         params['crew_code'] = details.crewCode ?? "";
         params['vessel_name'] = details.currentVesselName ?? "";
       }*/
+      }
+      _fireBaseAnalytics.logEvent(
+        name: eventName,
+        parameters: params.map((key, value) => MapEntry(key, value.toString())),
+      );
+      debugPrint("$eventName : $params");
     }
-    _fireBaseAnalytics.logEvent(
-      name: eventName,
-      parameters: params,
-    );
-    debugPrint("$eventName : $params");
   }
 
   void setUserID(String? id) {

@@ -15,6 +15,8 @@
   "messageFlexibleUpdate": "There is a new version available for this app. Try out new features by updating the app.",
   "labelSomethingWentWrong": "Something Went Wrong. Please Try Again Later",
   "labelOk": "Ok",
+  "labelImage": "Image",
+  "labelDocument": "Document",
   "labelNoNetworkAvailable": "No Network Available",
   "labelCancelXConfirmation": "Are you sure you want to cancel the {label}?",
   "@labelCancelXConfirmation": {

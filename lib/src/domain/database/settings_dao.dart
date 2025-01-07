@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 
 class SettingsDao extends BaseHiveDao {
   static const kUserSecurity = 'user_security';
+  static const kInitialFetch = 'initial_fetch';
 
   Future<Box> getBox() async {
     return Hive.openBox("settings");
@@ -17,7 +18,18 @@ class SettingsDao extends BaseHiveDao {
   Future<bool> isSecurityEnabled() async {
     final box = await getBox();
     final value = await box.get(kUserSecurity);
-    return toBool(value) ?? true;
+    return toDefaultBool(value, defaultValue: true);
+  }
+
+  Future<void> setInitialFetchCompleted(bool value) async {
+    final box = await getBox();
+    box.put(kInitialFetch, value);
+  }
+
+  Future<bool> isInitialFetchCompleted() async {
+    final box = await getBox();
+    final value = await box.get(kInitialFetch);
+    return toDefaultBool(value);
   }
 
   @override

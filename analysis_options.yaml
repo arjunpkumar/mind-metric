@@ -4,6 +4,7 @@ analyzer:
   exclude:
     - lib/**.g.dart
     - lib/generated/*
+    - lib/generated/**
 
   errors:
     missing_default_value_for_parameter: info

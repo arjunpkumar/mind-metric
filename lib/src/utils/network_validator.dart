@@ -23,9 +23,12 @@ class NetworkValidator {
   }
 }
 
-bool isNetworkAvailable(ConnectivityResult result) {
+bool isNetworkAvailable(List<ConnectivityResult> result) {
   return [
     ConnectivityResult.mobile,
     ConnectivityResult.wifi,
-  ].contains(result);
+    ConnectivityResult.ethernet,
+    // ConnectivityResult.bluetooth,
+    // ConnectivityResult.vpn,
+  ].any((item) => result.contains(item));
 }

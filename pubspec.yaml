@@ -32,7 +32,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  app_settings: ^5.1.1
+    app_settings: ^5.1.1
   bloc: ^8.1.4
   cached_network_image: ^3.4.1
   collection: ^1.19.0
@@ -43,6 +43,7 @@ dependencies:
   drift: ^2.23.1
   file_selector: ^1.0.3
   firebase_analytics: ^11.3.6
+  firebase_analytics_platform_interface: ^4.2.0
   firebase_core: ^3.9.0
   firebase_core_desktop: ^1.0.2
   firebase_crashlytics: ^4.2.0
@@ -75,9 +76,14 @@ dependencies:
   pull_to_refresh: ^2.0.0
   rive: ^0.9.1
   rxdart: ^0.28.0
+  share_plus: ^9.0.0
   shared_preferences: ^2.3.5
+  sqlite3: ^2.4.4
   sqlite3_flutter_libs: ^0.5.28
   synchronized: ^3.3.0+3
+  timeago: ^3.7.0
+  timezone: ^0.9.4
+  tuple: ^2.0.2
   url_launcher: ^6.3.1
   uuid: ^4.5.1
   webview_flutter: ^4.10.0
@@ -88,6 +94,7 @@ dependency_overrides:
   firebase_core_platform_interface: ^5.4.0
 
 dev_dependencies:
+  analyzer: ^6.4.1
   build_runner: ^2.4.14
   drift_dev: ^2.23.1
   flutter_launcher_icons: ^0.14.2
@@ -107,7 +114,6 @@ flutter:
   assets:
     - assets/
     - assets/images/
-    - assets/rc_config/
 
   fonts:
     - family: Roboto

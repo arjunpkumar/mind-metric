@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_base/config.dart';
+import 'package:flutter_base/generated/l10n.dart';
 import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_document_picker/flutter_document_picker.dart';
+import 'package:flutter_base/src/presentation/core/theme/text_styles.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
@@ -35,18 +35,13 @@ class FileUtil {
     }
   }
 
-  static Future<String> getFileSize(String path) async {
-    final file = File(path);
-    return (await file.length()).toString();
-  }
-
   static Future<String> getApplicationPath() async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final path = !kIsWeb && Platform.isWindows
         ? p.join(documentsDirectory.path, "/FlutterBase${_getFlavorPath()}")
         : documentsDirectory.path;
     final directory = Directory(path);
-    if (!await directory.exists()) await directory.create();
+    if (!await directory.exists()) await directory.create(recursive: true);
     return path;
   }
 
@@ -56,32 +51,51 @@ class FileUtil {
         ? p.join(documentsDirectory.path, "/FlutterBase${_getFlavorPath()}/Cache")
         : documentsDirectory.path;
     final directory = Directory(path);
-    if (!await directory.exists()) await directory.create();
+    if (!await directory.exists()) await directory.create(recursive: true);
     return path;
   }
 
-  static Future<String> createDirectory(String directory) async {
-    final appDocDir = await getApplicationPath();
-    final audioDirPath = p.join(appDocDir, directory);
-    final audioDir = Directory(audioDirPath);
-    if (!await audioDir.exists()) {
-      audioDir.createSync(recursive: true);
-    }
-    return audioDirPath;
+  static Future<String> getExternalPath() async {
+    final documentsDirectory = await getExternalStorageDirectory();
+    final path = !kIsWeb && Platform.isWindows
+        ? p.join(documentsDirectory!.path, "Ahoy${_getFlavorPath()}/Cache")
+        : documentsDirectory!.path;
+    final directory = Directory(path);
+    if (!await directory.exists()) await directory.create(recursive: true);
+    return path;
   }
 
-  static String getContentType(File file) {
-    return lookupMimeType(file.path) ?? "text/plain";
+  static Future<String> getDownloadPath() async {
+    final documentsDirectory = await getDownloadsDirectory();
+    final path = !kIsWeb && Platform.isWindows
+        ? p.join(documentsDirectory!.path, "Ahoy${_getFlavorPath()}/Cache")
+        : documentsDirectory!.path;
+    final directory = Directory(path);
+    if (!await directory.exists()) await directory.create(recursive: true);
+    return path;
   }
 
-  Future<File> moveFile(File sourceFile, String newPath) async {
+  static String getPathPrefix({
+    required String cdcNumber,
+    String? module,
+  }) {
+    return p.joinAll([
+      cdcNumber,
+      if (module != null) ...[module],
+    ]);
+  }
+
+  Future<void> createDirectory(String newPath) async {
     final newDirectoryPath = p.dirname(newPath);
     final newDirectory = Directory(newDirectoryPath);
     final isDirExists = await newDirectory.exists();
     if (!isDirExists) {
       await newDirectory.create(recursive: true);
     }
+  }
 
+  Future<File> moveFile(File sourceFile, String newPath) async {
+    await createDirectory(newPath);
     try {
       // prefer using rename as it is probably faster
       return await sourceFile.rename(newPath);
@@ -91,6 +105,28 @@ class FileUtil {
       await sourceFile.delete();
       return newFile;
     }
+  }
+
+  Future<File> copyFile(File sourceFile, String newPath) async {
+    await createDirectory(newPath);
+    final newFile = await sourceFile.copy(newPath);
+    return newFile;
+  }
+
+  Future<String> getFileSize(String path) async {
+    final file = File(path);
+    return file.length().toString();
+  }
+
+  static String getContentType(File file) {
+    return lookupMimeType(file.path) ?? "text/plain";
+  }
+
+  static String getProcessedFileUri(String path) {
+    if (!path.startsWith("file://")) {
+      return "file://$path";
+    }
+    return path;
   }
 
   Future<File?>? openCamera() async {
@@ -115,120 +151,141 @@ class FileUtil {
     return File(xFile.path);
   }
 
-  Future<File?> openDocumentPicker(
+  Future<File?> openDocumentPickerForMobile(
     BuildContext context, {
     bool isImageOnly = false,
     bool isAudioOnly = false,
     bool isPdfOnly = false,
   }) async {
-/*  if (Platform.isAndroid) {
-    return _documentPicker(
-      isImageOnly: isImageOnly,
-      isAudioOnly: isAudioOnly,
-      isPdfOnly: isPdfOnly,
-    );
-  }
+    final source = await _getDocumentSource(context, isImageOnly, isAudioOnly);
 
-  return _documentPickerWithModeSelector(
-    isImageOnly,
-    isAudioOnly,
-    context,
-    isPdfOnly,
-  );*/
+    XFile? xFile;
+    if (source == DocumentSource.image) {
+      xFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+      );
+    } else if (source == DocumentSource.document) {
+      xFile = await _documentPickerXFile(
+        isPdfOnly: isPdfOnly,
+      );
+    } else if (source == DocumentSource.audio) {
+      xFile = await _documentPickerXFile(isAudioOnly: true);
+    }
+    if (xFile != null) {
+      return File(xFile.path);
+    }
     return null;
   }
 
-/*
+  Future<XFile?> openDocumentPickerXFile(
+    BuildContext context, {
+    bool isImageOnly = false,
+    bool isAudioOnly = false,
+    bool isPdfOnly = false,
+    bool useFileSelectorOnly = false,
+  }) async {
+    final source = await _getDocumentSource(context, isImageOnly, isAudioOnly);
 
-Future<File> _documentPickerWithModeSelector(
-  bool isImageOnly,
-  bool isAudioOnly,
-  BuildContext context,
-  bool isPdfOnly,
-) async {
-  final source = isImageOnly
-      ? DocumentSource.image
-      : isAudioOnly
-          ? DocumentSource.audio
-          : await showModalBottomSheet<DocumentSource>(
-              context: context,
-              builder: (context) => SingleChildScrollView(
-                child: ListBody(
-                  children: <Widget>[
-                    ListTile(
-                      title: Text(
-                        'labelImage'.tr(),
-                        style: TextStyles.buttonSemibold(context),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context, DocumentSource.image);
-                      },
-                    ),
-                    const SizedBox(
-                      height: Units.kSPadding,
-                    ),
-                    ListTile(
-                      title: Text(
-                        'labelDocument'.tr(),
-                        style: TextStyles.buttonSemibold(context),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context, DocumentSource.document);
-                      },
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).padding.bottom,
-                    ),
-                  ],
-                ),
-              ),
-            );
-
-  if (source == DocumentSource.image) {
-    final xFile = await imagePicker.pickImage(
-      source: ImageSource.gallery,
-    );
-    return File(xFile.path);
-  } else if (source == DocumentSource.document) {
-    return _documentPicker(
-      isPdfOnly: isPdfOnly,
-    );
-  } else if (source == DocumentSource.audio) {
-    return _documentPicker(isAudioOnly: true);
+    if (!useFileSelectorOnly && source == DocumentSource.image) {
+      return ImagePicker().pickImage(
+        source: ImageSource.gallery,
+      );
+    } else if (useFileSelectorOnly || source == DocumentSource.document) {
+      return _documentPickerXFile(
+        isImageOnly: isImageOnly || source == DocumentSource.image,
+        isPdfOnly: isPdfOnly,
+      );
+    }
+    return null;
   }
 
-  return null;
-}
-*/
+  Future<DocumentSource?> _getDocumentSource(
+    BuildContext context,
+    bool isImageOnly,
+    bool isAudioOnly,
+  ) async {
+    return isImageOnly
+        ? DocumentSource.image
+        : isAudioOnly
+            ? DocumentSource.audio
+            : await showModalBottomSheet<DocumentSource>(
+                context: context,
+                builder: (context) => SingleChildScrollView(
+                  child: ListBody(
+                    children: <Widget>[
+                      ListTile(
+                        title: Text(
+                          S.current.labelImage,
+                          style: TextStyles.buttonSemiBold(context),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context, DocumentSource.image);
+                        },
+                      ),
+                      const SizedBox(
+                        height: Units.kSPadding,
+                      ),
+                      ListTile(
+                        title: Text(
+                          S.current.labelDocument,
+                          style: TextStyles.buttonSemiBold(context),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context, DocumentSource.document);
+                        },
+                      ),
+                      SizedBox(
+                        height: MediaQuery.of(context).padding.bottom,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+  }
 
-  Future<XFile?> pickDocument({
+  Future<XFile?> _documentPickerXFile({
     bool isImageOnly = false,
     bool isAudioOnly = false,
     bool isPdfOnly = false,
   }) async {
-    final path = await FlutterDocumentPicker.openDocument(
-      params: FlutterDocumentPickerParams(
-        allowedMimeTypes: isImageOnly
-            ? whiteListImageMimeTypes
-            : isAudioOnly
-                ? whiteListedAudioMimeTypes
-                : isPdfOnly
-                    ? whiteListPdfMimeType
-                    : whiteListDocumentMimeTypes,
-        allowedUtiTypes: isImageOnly
-            ? whiteListImageUtiTypes
-            : isAudioOnly
-                ? whiteListedAudioUtiTypes
-                : isPdfOnly
-                    ? whiteListPdfUtiType
-                    : whiteListDocumentUtiTypes,
-      ),
+    return openFile(
+      acceptedTypeGroups: getTypeGroups(isImageOnly, isAudioOnly, isPdfOnly),
     );
+  }
 
-    if (path != null) {
-      return XFile(path);
-    }
-    return null;
+  List<XTypeGroup> getTypeGroups(
+    bool isImageOnly,
+    bool isAudioOnly,
+    bool isPdfOnly,
+  ) {
+    const XTypeGroup imageGroup = XTypeGroup(
+      label: 'images',
+      mimeTypes: whiteListImageMimeTypes,
+      uniformTypeIdentifiers: whiteListImageUtiTypes,
+    );
+    const XTypeGroup audioGroup = XTypeGroup(
+      label: 'audio',
+      mimeTypes: whiteListedAudioMimeTypes,
+      uniformTypeIdentifiers: whiteListedAudioUtiTypes,
+    );
+    const XTypeGroup pdfGroup = XTypeGroup(
+      label: 'pdf',
+      mimeTypes: whiteListPdfMimeType,
+      uniformTypeIdentifiers: whiteListPdfUtiType,
+    );
+    const XTypeGroup allTypesGroup = XTypeGroup(
+      label: 'allTypes',
+      mimeTypes: whiteListDocumentMimeTypes,
+      uniformTypeIdentifiers: whiteListDocumentUtiTypes,
+      extensions: whiteListDocumentExtensions,
+    );
+    return isImageOnly
+        ? [imageGroup]
+        : isAudioOnly
+            ? [audioGroup]
+            : isPdfOnly
+                ? [pdfGroup]
+                : [allTypesGroup];
   }
 
   Future<List<XFile>> pickDocumentList({
@@ -236,28 +293,10 @@ Future<File> _documentPickerWithModeSelector(
     bool isAudioOnly = false,
     bool isPdfOnly = false,
   }) async {
-    final pathList = await FlutterDocumentPicker.openDocuments(
-      params: FlutterDocumentPickerParams(
-        allowedMimeTypes: isImageOnly
-            ? whiteListImageMimeTypes
-            : isAudioOnly
-                ? whiteListedAudioMimeTypes
-                : isPdfOnly
-                    ? whiteListPdfMimeType
-                    : whiteListDocumentMimeTypes,
-        allowedUtiTypes: isImageOnly
-            ? whiteListImageUtiTypes
-            : isAudioOnly
-                ? whiteListedAudioUtiTypes
-                : isPdfOnly
-                    ? whiteListPdfUtiType
-                    : whiteListDocumentUtiTypes,
-      ),
+    final pathList = await openFiles(
+      acceptedTypeGroups: getTypeGroups(isImageOnly, isAudioOnly, isPdfOnly),
     );
 
-    if (pathList != null) {
-      return pathList.whereNotNull().map((path) => XFile(path)).toList();
-    }
-    return [];
+    return pathList;
   }
 }

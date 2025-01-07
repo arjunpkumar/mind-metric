@@ -22,7 +22,52 @@ ThemeData getAppThemeData(BuildContext context) {
     scaffoldBackgroundColor: AppColors.softPeach,
     dividerColor: AppColors.chetWodeBlue,
     iconTheme: Theme.of(context).iconTheme.copyWith(color: AppColors.primary),
-    toggleableActiveColor: AppColors.primary,
+    checkboxTheme: CheckboxThemeData(
+      fillColor:
+          WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if (states.contains(WidgetState.disabled)) {
+          return AppColors.primary.withOpacity(.5);
+        }
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary;
+        }
+        return null;
+      }),
+    ),
+    radioTheme: RadioThemeData(
+      fillColor:
+          WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if (states.contains(WidgetState.disabled)) {
+          return AppColors.primary.withOpacity(.5);
+        }
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary;
+        }
+        return null;
+      }),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor:
+          WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if (states.contains(WidgetState.disabled)) {
+          return AppColors.primary.withOpacity(.5);
+        }
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary;
+        }
+        return null;
+      }),
+      trackColor:
+          WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if (states.contains(WidgetState.disabled)) {
+          return AppColors.primary.withOpacity(.5);
+        }
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary;
+        }
+        return null;
+      }),
+    ),
   );
 }
 
