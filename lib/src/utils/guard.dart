@@ -3,7 +3,7 @@ import 'package:flutter_base/src/utils/error_logger.dart';
 
 /// Created by Jemsheer K D on 15 September, 2023.
 /// File Name : guard
-/// Project : CX Falcon
+/// Project : FlutterBase
 
 class Guard {
   Guard._();

@@ -40,8 +40,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "errWebView": MessageLookupByLibrary.simpleMessage(
             "Error Loading The Web Page. Try Again Later"),
         "labelCancelXConfirmation": m0,
-        "labelFlutterBase":
-            MessageLookupByLibrary.simpleMessage("Flutter Base"),
+        "labelFlutterBase": MessageLookupByLibrary.simpleMessage("FlutterBase"),
         "labelNoConnection":
             MessageLookupByLibrary.simpleMessage("No Connection"),
         "labelNoData": MessageLookupByLibrary.simpleMessage("No Data"),

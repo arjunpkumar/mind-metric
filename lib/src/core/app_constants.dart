@@ -87,7 +87,7 @@ const whiteListedAudioUtiTypes = [
   'com.apple.coreaudio-format',
   'public.ac3-audio',
   'com.digidesign.sd2-audio',
-  'com.microsoft.thinkhubform-audio',
+  'com.microsoft.flutterbaseform-audio',
   'com.soundblaster.soundfont',
 ];
 

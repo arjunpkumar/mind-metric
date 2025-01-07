@@ -16,7 +16,7 @@ Map<String, dynamic> getHeaders({AuthToken? authToken, String? userToken}) {
     if (authToken != null) 'Authorization': 'Bearer ${authToken.accessToken}',
     if (StringUtils.isNotNullAndEmpty(userToken))
       'Authorization': 'Bearer $userToken',
-    'app': 'CX Falcon',
+    'app': 'FlutterBase',
     'version': Config.getVersionName(),
     'build': Config.getBuildNumber(),
     'source': Config.appSource,

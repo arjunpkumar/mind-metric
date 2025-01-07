@@ -4,7 +4,7 @@ import 'package:hive/hive.dart';
 
 /// Created by Jemsheer K D on 25 September, 2023.
 /// File Name : remote_config_dao
-/// Project : CX Falcon
+/// Project : FlutterBase
 
 class RemoteConfigDao extends BaseHiveDao {
   static const kRemoteConfig = 'remote_config';

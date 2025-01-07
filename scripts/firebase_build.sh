@@ -20,7 +20,7 @@ projectIOSProd='projects/111740542/apps/1:111740542:ios:41e86d5126ea7e0c7b3a2f'
 
 gcloud auth revoke --all
 workDir=$(pwd)
-gcloud auth activate-service-account --key-file="$workDir/scripts/firebase/thinkhub.json"
+gcloud auth activate-service-account --key-file="$workDir/scripts/firebase/flutterbase.json"
 authToken=$(gcloud auth print-access-token)
 echo "$authToken"
 
@@ -126,13 +126,13 @@ uploadFile() {
 uploadApk() {
   binaryPath="$workDir/build/app/outputs/flutter-apk/app-$1-release.apk"
   echo "Uploading APK : $binaryPath"
-  uploadFile "$binaryPath" "$2" 'thinkhub-release.apk'
+  uploadFile "$binaryPath" "$2" 'flutterbase-release.apk'
 }
 
 uploadAppBundle() {
   binaryPath="$workDir/build/app/outputs/flutter-apk/app-$1-release.aab"
   echo "Uploading AppBundle : $binaryPath"
-  uploadFile "$binaryPath" "$2" 'thinkhub-release.aab'
+  uploadFile "$binaryPath" "$2" 'flutterbase-release.aab'
 }
 
 uploadIPA() {

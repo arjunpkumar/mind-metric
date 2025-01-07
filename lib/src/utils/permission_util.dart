@@ -6,7 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 /// Created by Jemsheer K D on 21 November, 2023.
 /// File Name : permission_util
-/// Project : CXFalcon
+/// Project : FlutterBase
 
 class PermissionUtil {
   static void showOpenSettingsSnackBar(String message) {

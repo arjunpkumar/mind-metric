@@ -60,10 +60,10 @@ class S {
     );
   }
 
-  /// `Flutter Base`
+  /// `FlutterBase`
   String get labelFlutterBase {
     return Intl.message(
-      'Flutter Base',
+      'FlutterBase',
       name: 'labelFlutterBase',
       desc: '',
       args: [],

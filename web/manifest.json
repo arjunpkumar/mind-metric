@@ -1,6 +1,6 @@
 {
-    "name": "thinkhub",
-    "short_name": "thinkhub",
+    "name": "flutterbase",
+    "short_name": "flutterbase",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

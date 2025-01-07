@@ -5,7 +5,7 @@ import 'package:flutter_base/src/utils/guard.dart';
 
 /// Created by Jemsheer K D on 25 September, 2023.
 /// File Name : remote_config_repository
-/// Project : CX Falcon
+/// Project : FlutterBase
 
 class RemoteConfigRepository {
   static RemoteConfigRepository? instance;

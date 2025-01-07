@@ -58,9 +58,9 @@ class DefaultFirebaseOptions {
     if (flavor is Production) {
       return const FirebaseOptions(
         apiKey: "AIzaSyDleI6-dTzCt3evKYz9qf8txla1vp7F4IU",
-        authDomain: "thinkhub-app.firebaseapp.com",
-        projectId: "thinkhub-app",
-        storageBucket: "thinkhub-app.appspot.com",
+        authDomain: "flutterbase-app.firebaseapp.com",
+        projectId: "flutterbase-app",
+        storageBucket: "flutterbase-app.appspot.com",
         messagingSenderId: "111740542",
         appId: "1:111740542:web:1c3ea30e32bc2eb67b3a2f",
         measurementId: "G-S4RC9YKHB7",
@@ -68,9 +68,9 @@ class DefaultFirebaseOptions {
     } else if (flavor is Staging) {
       return const FirebaseOptions(
         apiKey: "AIzaSyDleI6-dTzCt3evKYz9qf8txla1vp7F4IU",
-        authDomain: "thinkhub-app.firebaseapp.com",
-        projectId: "thinkhub-app",
-        storageBucket: "thinkhub-app.appspot.com",
+        authDomain: "flutterbase-app.firebaseapp.com",
+        projectId: "flutterbase-app",
+        storageBucket: "flutterbase-app.appspot.com",
         messagingSenderId: "111740542",
         appId: "1:111740542:web:f2b272f30e48dc1a7b3a2f",
         measurementId: "G-B2HKK99LLZ",
@@ -78,9 +78,9 @@ class DefaultFirebaseOptions {
     } else if (flavor is QA) {
       return const FirebaseOptions(
         apiKey: "AIzaSyDleI6-dTzCt3evKYz9qf8txla1vp7F4IU",
-        authDomain: "thinkhub-app.firebaseapp.com",
-        projectId: "thinkhub-app",
-        storageBucket: "thinkhub-app.appspot.com",
+        authDomain: "flutterbase-app.firebaseapp.com",
+        projectId: "flutterbase-app",
+        storageBucket: "flutterbase-app.appspot.com",
         messagingSenderId: "111740542",
         appId: "1:111740542:web:e0f0cfe3a672e5e67b3a2f",
         measurementId: "G-QJJMNLVS59",
@@ -88,9 +88,9 @@ class DefaultFirebaseOptions {
     } else {
       return const FirebaseOptions(
         apiKey: "AIzaSyDleI6-dTzCt3evKYz9qf8txla1vp7F4IU",
-        authDomain: "thinkhub-app.firebaseapp.com",
-        projectId: "thinkhub-app",
-        storageBucket: "thinkhub-app.appspot.com",
+        authDomain: "flutterbase-app.firebaseapp.com",
+        projectId: "flutterbase-app",
+        storageBucket: "flutterbase-app.appspot.com",
         messagingSenderId: "111740542",
         appId: "1:111740542:web:85551e9e67e185657b3a2f",
         measurementId: "G-M167QQ2J0R",

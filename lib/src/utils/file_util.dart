@@ -43,7 +43,7 @@ class FileUtil {
   static Future<String> getApplicationPath() async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final path = !kIsWeb && Platform.isWindows
-        ? p.join(documentsDirectory.path, "/CX Falcon${_getFlavorPath()}")
+        ? p.join(documentsDirectory.path, "/FlutterBase${_getFlavorPath()}")
         : documentsDirectory.path;
     final directory = Directory(path);
     if (!await directory.exists()) await directory.create();
@@ -53,7 +53,7 @@ class FileUtil {
   static Future<String> getApplicationTempPath() async {
     final documentsDirectory = await getApplicationCacheDirectory();
     final path = !kIsWeb && Platform.isWindows
-        ? p.join(documentsDirectory.path, "/CX Falcon${_getFlavorPath()}/Cache")
+        ? p.join(documentsDirectory.path, "/FlutterBase${_getFlavorPath()}/Cache")
         : documentsDirectory.path;
     final directory = Directory(path);
     if (!await directory.exists()) await directory.create();

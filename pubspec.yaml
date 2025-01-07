@@ -1,5 +1,5 @@
 name: flutter_base
-description: ThinkPalm Flutter Base Application
+description: ThinkPalm FlutterBase Application
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -32,133 +32,70 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.6
-  shared_preferences: ^2.2.2
-
-  #secure storage
-  flutter_secure_storage: ^9.0.0
-
-  # Drift Database
-  drift: ^2.14.0
-  sqlite3_flutter_libs: ^0.5.20
-
-  # NoSQL storage
-  hive: ^2.2.3
-
-  # Manges Permissions
-  permission_handler: ^11.0.1
-
-  #device security based authentication
-  local_auth: ^2.1.8
-
-  #to open desired app settings
   app_settings: ^5.1.1
-
-  #triggers local notifications
-  flutter_local_notifications: ^16.3.2
-
-  #for local notification zoned schedule
-  flutter_native_timezone_updated_gradle: ^2.0.3
-
-  #Access SVG icons
-  flutter_svg: ^2.0.9
-
-  # Rive Animation
-  rive: ^0.9.1
-
-  # Lock mechanism
-  synchronized: ^3.1.0+1
-
-  # Network Reachability
-  connectivity_plus: ^5.0.2
-
-  device_info_plus: ^9.1.2
-  package_info_plus: ^4.2.0
-  mime: ^1.0.4
-
-  collection: ^1.17.2
-
-  # Image Cacher
-  cached_network_image: ^3.3.1
-
-  # File / Directory related plugins
-  path_provider: ^2.1.2
-  path: ^1.8.3
-
-  # open any file in system app
-  open_filex: ^4.4.0
-  #  open_file: ^3.2.1
-
-  # Url Launcher
-  url_launcher: ^6.2.4
-
-  # Localization
+  bloc: ^8.1.4
+  cached_network_image: ^3.4.1
+  collection: ^1.19.0
+  connectivity_plus: ^6.1.1
+  cupertino_icons: ^1.0.8
+  device_info_plus: ^11.2.0
+  dio: ^5.7.0
+  drift: ^2.23.1
+  file_selector: ^1.0.3
+  firebase_analytics: ^11.3.6
+  firebase_core: ^3.9.0
+  firebase_core_desktop: ^1.0.2
+  firebase_crashlytics: ^4.2.0
+  firebase_database: ^11.2.0
+  firebase_dynamic_links: ^6.0.11
   flutter_localizations:
     sdk: flutter
-  intl: ^0.18.1
-
-  # Firebase
-  firebase_core: ^2.17.0
-  firebase_core_desktop: ^1.0.2
-  firebase_crashlytics: ^3.3.7
-  firebase_analytics: ^10.5.1
-  firebase_remote_config: ^4.2.7
-  firebase_messaging: ^14.6.9
-  firebase_database: ^10.2.7
-  firebase_dynamic_links: ^5.3.7
-
-  googleapis_auth: ^1.4.1
-
-  # Networking
-  http: ^1.1.0
-  dio: ^5.4.0
-
-  # OpenId connect
-  oauth2: ^2.0.2
-
-  # bloc Pattern
-  bloc: ^8.1.2
-  flutter_bloc: ^8.1.3
-  provider: ^6.1.1
-
-  image_picker: ^1.0.7
-  flutter_document_picker: ^5.2.3
-
+  firebase_messaging: ^15.1.6
+  firebase_remote_config: ^5.2.0
+  flutter_bloc: ^8.1.6
+  flutter_local_notifications: ^18.0.1
+  flutter_native_splash: ^2.4.4
+  flutter_secure_storage: ^9.2.3
+  flutter_svg: ^2.0.16
+  flutter_timezone: ^4.0.0
+  googleapis_auth: ^1.6.0
+  hive: ^2.2.3
+  http: ^1.2.2
+  image_picker: ^1.1.2
+  intl: ^0.19.0
+  local_auth: ^2.3.0
+  mime: ^2.0.0
+  oauth2: ^2.0.3
+  open_filex: ^4.6.0
+  package_info_plus: ^8.1.2
+  path: ^1.9.0
+  path_provider: ^2.1.5
+  permission_handler: ^11.3.1
+  provider: ^6.1.2
   pull_to_refresh: ^2.0.0
-
-  # Useful for Reactive Programming
-  rxdart: ^0.27.7
-
-  webview_flutter: ^4.5.0
-  webview_flutter_android: ^3.14.0
-
-  # for creating unique ids
-  uuid: ^4.1.0
-
-  file_selector: ^1.0.1
-
-  flutter_native_splash: ^2.3.4
+  rive: ^0.9.1
+  rxdart: ^0.28.0
+  shared_preferences: ^2.3.5
+  sqlite3_flutter_libs: ^0.5.28
+  synchronized: ^3.3.0+3
+  url_launcher: ^6.3.1
+  uuid: ^4.5.1
+  webview_flutter: ^4.10.0
+  webview_flutter_android: ^4.2.0
 
 dependency_overrides:
-  http: ^1.1.0
+  http: ^1.2.2
+  firebase_core_platform_interface: ^5.4.0
 
 dev_dependencies:
+  build_runner: ^2.4.14
+  drift_dev: ^2.23.1
+  flutter_launcher_icons: ^0.14.2
+  flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
-  lint: ^2.1.2
-  drift_dev: ^2.13.0
-  build_runner: ^2.4.6
-  mockito: ^5.4.2
-  flutter_launcher_icons: ^0.13.1
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  lint: ^2.3.0
+  mockito: ^5.4.5
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
