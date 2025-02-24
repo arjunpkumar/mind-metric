@@ -26,6 +26,7 @@ import 'package:flutter_base/src/utils/auth/auth_util.dart';
 import 'package:flutter_base/src/utils/biometric_local_auth_utils.dart';
 import 'package:flutter_base/src/utils/file_downloader.dart';
 import 'package:flutter_base/src/utils/network_validator.dart';
+import 'package:flutter_base/src/utils/sync/job_util.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -118,6 +119,13 @@ JobManager provideJobManager() {
 JobRepository provideJobRepository() {
   return JobRepository.instance ??=
       JobRepository.init(jobDao: provideAppDatabase().jobDao);
+}
+
+JobUtils provideJobUtils() {
+  return JobUtils.instance ??= JobUtils(
+    jobRepository: provideJobRepository(),
+    jobManager: provideJobManager(),
+  );
 }
 
 AuthRepository provideAuthRepository() {

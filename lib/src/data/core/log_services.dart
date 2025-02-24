@@ -12,6 +12,13 @@ class Logger {
     return _instance ??= Logger._();
   }
 
+  ///Should Only Be Used for writing Unit Test Cases
+  ///[instance] needs to be a mocked instance of Logger
+  @visibleForTesting
+  factory Logger.fromMock(Logger instance) {
+    return _instance = instance;
+  }
+
   Logger._();
 
   void login(User user) {

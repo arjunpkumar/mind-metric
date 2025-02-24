@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_base/src/application/sync/syncable_provider.dart';
 import 'package:flutter_base/src/core/app_constants.dart';
@@ -13,7 +12,6 @@ import 'package:rxdart/rxdart.dart';
 /// Created by Jemsheer K D on 21 February, 2025.
 /// File Name : job_manager
 /// Project : FlutterBase
-
 
 class JobManager {
   late NetworkValidator _networkValidator;
@@ -42,13 +40,12 @@ class JobManager {
     required JobRepository jobRepository,
     required SyncableProvider syncableProvider,
   }) {
-    instance = JobManager._();
-    instance!._jobRepository = jobRepository;
-    instance!._userRepository = userRepository;
-    instance!._networkValidator = networkValidator;
-    instance!._syncableProvider = syncableProvider;
-
-    instance!._resetExhausted();
+    instance = JobManager._()
+      .._jobRepository = jobRepository
+      .._userRepository = userRepository
+      .._networkValidator = networkValidator
+      .._syncableProvider = syncableProvider
+      .._resetExhausted();
     return instance!;
   }
 
