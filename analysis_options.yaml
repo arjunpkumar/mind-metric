@@ -12,6 +12,7 @@ analyzer:
 
 linter:
   rules:
+    require_trailing_commas: true
     type_annotate_public_apis: false
     use_setters_to_change_properties: false
     avoid_positional_boolean_parameters: false

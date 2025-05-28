@@ -42,8 +42,10 @@ class AppMaterial extends StatelessWidget {
     this.width,
   })  : assert(elevation >= 0.0),
         assert(!(shape != null && borderRadius != null)),
-        assert(!(identical(type, MaterialType.circle) &&
-            (borderRadius != null || shape != null)));
+        assert(
+          !(identical(type, MaterialType.circle) &&
+              (borderRadius != null || shape != null)),
+        );
 
   @override
   Widget build(BuildContext context) {

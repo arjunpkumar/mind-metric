@@ -61,7 +61,9 @@ class FileUtil {
     final documentsDirectory = await getApplicationCacheDirectory();
     final path = !kIsWeb && Platform.isWindows
         ? p.join(
-            documentsDirectory.path, "FlutterBase${_getFlavorPath()}/Cache")
+            documentsDirectory.path,
+            "FlutterBase${_getFlavorPath()}/Cache",
+          )
         : documentsDirectory.path;
     final directory = Directory(path);
     if (!await directory.exists()) await directory.create(recursive: true);
@@ -72,7 +74,9 @@ class FileUtil {
     final documentsDirectory = await getExternalStorageDirectory();
     final path = !kIsWeb && Platform.isWindows
         ? p.join(
-            documentsDirectory!.path, "Flutter Base${_getFlavorPath()}/Cache")
+            documentsDirectory!.path,
+            "Flutter Base${_getFlavorPath()}/Cache",
+          )
         : documentsDirectory!.path;
     final directory = Directory(path);
     if (!await directory.exists()) await directory.create(recursive: true);
@@ -83,7 +87,9 @@ class FileUtil {
     final documentsDirectory = await getDownloadsDirectory();
     final path = !kIsWeb && Platform.isWindows
         ? p.join(
-            documentsDirectory!.path, "Flutter Base${_getFlavorPath()}/Cache")
+            documentsDirectory!.path,
+            "Flutter Base${_getFlavorPath()}/Cache",
+          )
         : documentsDirectory!.path;
     final directory = Directory(path);
     if (!await directory.exists()) await directory.create(recursive: true);

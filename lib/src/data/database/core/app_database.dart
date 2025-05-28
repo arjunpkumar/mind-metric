@@ -40,8 +40,10 @@ class AppDatabase extends _$AppDatabase {
   static bool isInitCompleted() => _instance != null;
 
   factory AppDatabase.instance() {
-    assert(_instance != null,
-        'Database not initialized. Call `AppDatabase.init()` first.');
+    assert(
+      _instance != null,
+      'Database not initialized. Call `AppDatabase.init()` first.',
+    );
     return _instance!;
   }
 
