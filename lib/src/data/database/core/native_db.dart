@@ -18,7 +18,7 @@ LazyDatabase constructDb() {
 /*  await Share.shareXFiles([XFile(file.path)]);
 
     final externalPath = await FileUtil.getDownloadPath();
-    final externalFile = File(p.join(externalPath, 'Ahoy', 'db.sqlite'));
+    final externalFile = File(p.join(externalPath, 'Flutter Base', 'db.sqlite'));
     await FileUtil().copyFile(file, externalFile.path);
 */
 

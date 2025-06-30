@@ -79,8 +79,8 @@ Future<void> loadPackageInfoMock() async {
   setMockMethodCallHandler(channel, (MethodCall methodCall) async {
     if (methodCall.method == 'getAll') {
       return <String, dynamic>{
-        'appName': 'Ahoy',
-        'packageName': 'com.ahoy.test',
+        'appName': 'Flutter Base',
+        'packageName': 'com.thinkpalm.flutterbase',
         'version': '1.0.0',
         'buildNumber': '2',
       };

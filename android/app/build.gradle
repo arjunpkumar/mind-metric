@@ -33,7 +33,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.thinkpalm.flutterbase"
-    compileSdkVersion 34
+    compileSdkVersion 35
     ndkVersion flutter.ndkVersion
 
     kotlinOptions {
@@ -111,8 +111,8 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
-    implementation 'com.google.android.gms:play-services-basement:18.5.0'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    implementation 'com.google.android.gms:play-services-basement:18.7.0'
     implementation 'com.google.android.play:app-update:2.1.0'
     implementation 'androidx.multidex:multidex:2.0.1'
 
