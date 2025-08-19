@@ -36,80 +36,80 @@ dependencies:
   bloc: ^9.0.0
   cached_network_image: ^3.4.1
   collection: ^1.19.1
-  connectivity_plus: ^6.1.4
-  device_info_plus: ^11.4.0
-  dio: ^5.8.0+1
-  drift: ^2.26.1
+  connectivity_plus: ^6.1.5
+  device_info_plus: ^11.5.0
+  dio: ^5.9.0
+  drift: ^2.28.1
   file_selector: ^1.0.3
 
-  firebase_analytics: ^11.4.6
-  firebase_analytics_platform_interface: ^4.3.6
-  firebase_core: ^3.13.1
-  firebase_core_desktop: ^1.0.2
-  firebase_core_platform_interface: ^5.4.0
-  firebase_crashlytics: ^4.3.6
-  firebase_crashlytics_platform_interface: ^3.8.6
-  firebase_dynamic_links: ^6.1.6
-  firebase_messaging: ^15.2.6
-  firebase_performance: ^0.10.1+6
-  firebase_remote_config: ^5.4.4
+  firebase_analytics: ^12.0.0
+  firebase_core: ^4.0.0
+#  firebase_core_desktop: ^1.0.2
+  firebase_crashlytics: ^5.0.0
+#  firebase_dynamic_links: ^6.1.6
+  firebase_messaging: ^16.0.0
+  firebase_performance: ^0.11.0
+  firebase_remote_config: ^6.0.0
 
   flutter_bloc: ^9.1.1
-  flutter_local_notifications: ^19.2.1
+  flutter_local_notifications: ^19.4.0
   flutter_localizations:
     sdk: flutter
   flutter_native_splash: ^2.4.6
   flutter_secure_storage: ^9.2.4
-  flutter_svg: ^2.1.0
+  flutter_svg: ^2.2.0
   flutter_timezone: ^4.1.1
   googleapis_auth: ^2.0.0
   hive: ^2.2.3
-  http: ^1.4.0
+  http: ^1.5.0
   image: ^4.5.4
-  image_picker: ^1.1.2
+  image_picker: ^1.2.0
   intl: ^0.20.2
   local_auth: ^2.3.0
   mime: ^2.0.0
   oauth2: ^2.0.3
   open_filex: ^4.7.0
-  package_info_plus: ^8.3.0
+  package_info_plus: ^8.3.1
   path: ^1.9.1
   path_provider: ^2.1.5
-  permission_handler: ^12.0.0+1
+  permission_handler: ^12.0.1
   provider: ^6.1.5
   pull_to_refresh: ^2.0.0
   rive: ^0.9.1
   rxdart: ^0.28.0
-  share_plus: ^11.0.0
+  share_plus: ^11.1.0
   shared_preferences: ^2.5.3
-  sqlite3: ^2.7.6
-  sqlite3_flutter_libs: ^0.5.33
-  synchronized: ^3.3.1
+  sqlite3: ^2.9.0
+  sqlite3_flutter_libs: ^0.5.39
+  synchronized: ^3.4.0
   timeago: ^3.7.1
   timezone: ^0.10.1
   tuple: ^2.0.2
-  url_launcher: ^6.3.1
+  url_launcher: ^6.3.2
   uuid: ^4.5.1
   web: ^1.1.1
   webview_flutter: ^4.13.0
-  webview_flutter_android: ^4.7.0
+  webview_flutter_android: ^4.10.0
 
 dependency_overrides:
-  device_info_plus: ^11.4.0
-  firebase_core_platform_interface: ^5.4.0
-  http: ^1.4.0
-  package_info_plus: ^8.3.0
+  device_info_plus: ^11.5.0
+  firebase_core_platform_interface: ^6.0.0
+  http: ^1.5.0
+  package_info_plus: ^8.3.1
   web: ^1.1.1
 
 dev_dependencies:
-  analyzer: ^7.4.5
+  analyzer: ^7.7.1
   build_runner: ^2.4.15
-  drift_dev: ^2.26.1
-  flutter_lints: ^5.0.0
+  drift_dev: ^2.28.1
+  firebase_analytics_platform_interface: ^5.0.0
+  firebase_core_platform_interface: ^6.0.0
+  firebase_crashlytics_platform_interface: ^3.8.11
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
   lint: ^2.8.0
-  mockito: ^5.4.6
+  mockito: ^5.5.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -197,8 +197,9 @@ class _AppVersionWidgetState extends State<AppVersionWidget> {
                 actions: <Widget>[
                   TextButton(
                     onPressed: () {
-                      ignoreVersion(info.updateVersion)
-                          .then((value) => Navigator.pop(context));
+                      ignoreVersion(info.updateVersion).then((value) {
+                        if (context.mounted) Navigator.pop(context);
+                      });
                     },
                     child: Text(S.current.btnLater.toUpperCase()),
                   ),

@@ -1,4 +1,4 @@
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+// import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter_base/src/utils/deeplink_navigator.dart';
 
 class DeeplinkHandler {
@@ -7,7 +7,7 @@ class DeeplinkHandler {
   DeeplinkHandler({required this.navigator});
 
   Future<void> setup() async {
-    final dynamicLink = await FirebaseDynamicLinks.instance.getInitialLink();
+    /*final dynamicLink = await FirebaseDynamicLinks.instance.getInitialLink();
     await onDynamicLinkDataReceived(
       dynamicLink: dynamicLink,
       isAppLaunch: true,
@@ -20,10 +20,10 @@ class DeeplinkHandler {
           isAppLaunch: false,
         );
       },
-    );
+    );*/
   }
 
-  Future<void> onDynamicLinkDataReceived({
+  /*Future<void> onDynamicLinkDataReceived({
     required PendingDynamicLinkData? dynamicLink,
     required bool isAppLaunch,
   }) async {
@@ -39,5 +39,5 @@ class DeeplinkHandler {
       type: type,
       isAppLaunch: isAppLaunch,
     );
-  }
+  }*/
 }

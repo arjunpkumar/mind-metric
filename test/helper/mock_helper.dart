@@ -184,6 +184,7 @@ class MockHelper {
   static late MockFirebaseCrashlytics mockFirebaseCrashlytics;
   static late MockAuthRepository mockAuthRepository;
   static late MockUserRepository mockUserRepository;
+  // static late MockNetworkUsagesRepository mockNetworkUsagesRepository;
   static late MockFileUtil mockFileUtil;
   static late MockFlavor mockFlavor;
   static bool isInitCompleted = false;
@@ -195,6 +196,7 @@ class MockHelper {
 
     mockAuthRepository = MockAuthRepository();
     mockUserRepository = MockUserRepository();
+    // mockNetworkUsagesRepository = MockNetworkUsagesRepository();
     mockFirebaseCrashlytics = MockFirebaseCrashlytics();
     mockConfigRepository = MockConfigRepository();
     mockRemoteConfig = MockFirebaseRemoteConfig();
@@ -245,6 +247,8 @@ class MockHelper {
     when(mockFileUtil.getApplicationTempPath())
         .thenAnswer((_) => Future.value("/"));
 
+    // when(mockNetworkUsagesRepository.syncPendingLogs())
+    //     .thenAnswer((_) => Future.value());
     when(mockUserRepository.getCurrentUser())
         .thenAnswer((_) => Future.value(user));
     when(mockUserRepository.getActiveUser())
