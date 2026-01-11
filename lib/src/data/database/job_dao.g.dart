@@ -5,7 +5,6 @@ part of 'job_dao.dart';
 // ignore_for_file: type=lint
 mixin _$JobDaoMixin on DatabaseAccessor<AppDatabase> {
   $JobsTable get jobs => attachedDatabase.jobs;
-
   Future<int> deleteJobById(String jobId) {
     return customUpdate(
       'DELETE FROM jobs WHERE id = ?1',

@@ -7,9 +7,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-
   $UsersTable(this.attachedDatabase, [this._alias]);
-
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -44,18 +42,14 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   late final GeneratedColumn<String> profilePhoto = GeneratedColumn<String>(
       'profile_photo', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-
   @override
   List<GeneratedColumn> get $columns =>
       [id, firstName, lastName, designation, email, profilePhoto];
-
   @override
   String get aliasedName => _alias ?? actualTableName;
-
   @override
   String get actualTableName => $name;
   static const String $name = 'users';
-
   @override
   VerificationContext validateIntegrity(Insertable<User> instance,
       {bool isInserting = false}) {
@@ -99,7 +93,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
-
   @override
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -132,7 +125,6 @@ class User extends DataClass implements Insertable<User> {
   final String? designation;
   final String? email;
   final String? profilePhoto;
-
   const User(
       {required this.id,
       required this.firstName,
@@ -140,7 +132,6 @@ class User extends DataClass implements Insertable<User> {
       this.designation,
       this.email,
       this.profilePhoto});
-
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -187,7 +178,6 @@ class User extends DataClass implements Insertable<User> {
       profilePhoto: serializer.fromJson<String?>(json['profilePhoto']),
     );
   }
-
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -217,7 +207,6 @@ class User extends DataClass implements Insertable<User> {
         profilePhoto:
             profilePhoto.present ? profilePhoto.value : this.profilePhoto,
       );
-
   User copyWithCompanion(UsersCompanion data) {
     return User(
       id: data.id.present ? data.id.value : this.id,
@@ -248,7 +237,6 @@ class User extends DataClass implements Insertable<User> {
   @override
   int get hashCode =>
       Object.hash(id, firstName, lastName, designation, email, profilePhoto);
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -269,7 +257,6 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String?> email;
   final Value<String?> profilePhoto;
   final Value<int> rowid;
-
   const UsersCompanion({
     this.id = const Value.absent(),
     this.firstName = const Value.absent(),
@@ -279,7 +266,6 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.profilePhoto = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-
   UsersCompanion.insert({
     required String id,
     required String firstName,
@@ -291,7 +277,6 @@ class UsersCompanion extends UpdateCompanion<User> {
   })  : id = Value(id),
         firstName = Value(firstName),
         lastName = Value(lastName);
-
   static Insertable<User> custom({
     Expression<String>? id,
     Expression<String>? firstName,
@@ -378,9 +363,7 @@ class $AuthTokensTable extends AuthTokens
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-
   $AuthTokensTable(this.attachedDatabase, [this._alias]);
-
   static const VerificationMeta _accessTokenMeta =
       const VerificationMeta('accessToken');
   @override
@@ -399,17 +382,13 @@ class $AuthTokensTable extends AuthTokens
   late final GeneratedColumn<String> refreshToken = GeneratedColumn<String>(
       'refresh_token', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-
   @override
   List<GeneratedColumn> get $columns => [accessToken, idToken, refreshToken];
-
   @override
   String get aliasedName => _alias ?? actualTableName;
-
   @override
   String get actualTableName => $name;
   static const String $name = 'auth_tokens';
-
   @override
   VerificationContext validateIntegrity(Insertable<AuthToken> instance,
       {bool isInserting = false}) {
@@ -440,7 +419,6 @@ class $AuthTokensTable extends AuthTokens
 
   @override
   Set<GeneratedColumn> get $primaryKey => const {};
-
   @override
   AuthToken map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -464,10 +442,8 @@ class AuthToken extends DataClass implements Insertable<AuthToken> {
   final String accessToken;
   final String idToken;
   final String? refreshToken;
-
   const AuthToken(
       {required this.accessToken, required this.idToken, this.refreshToken});
-
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -498,7 +474,6 @@ class AuthToken extends DataClass implements Insertable<AuthToken> {
       refreshToken: serializer.fromJson<String?>(json['refreshToken']),
     );
   }
-
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -519,7 +494,6 @@ class AuthToken extends DataClass implements Insertable<AuthToken> {
         refreshToken:
             refreshToken.present ? refreshToken.value : this.refreshToken,
       );
-
   AuthToken copyWithCompanion(AuthTokensCompanion data) {
     return AuthToken(
       accessToken:
@@ -543,7 +517,6 @@ class AuthToken extends DataClass implements Insertable<AuthToken> {
 
   @override
   int get hashCode => Object.hash(accessToken, idToken, refreshToken);
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -558,14 +531,12 @@ class AuthTokensCompanion extends UpdateCompanion<AuthToken> {
   final Value<String> idToken;
   final Value<String?> refreshToken;
   final Value<int> rowid;
-
   const AuthTokensCompanion({
     this.accessToken = const Value.absent(),
     this.idToken = const Value.absent(),
     this.refreshToken = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-
   AuthTokensCompanion.insert({
     required String accessToken,
     required String idToken,
@@ -573,7 +544,6 @@ class AuthTokensCompanion extends UpdateCompanion<AuthToken> {
     this.rowid = const Value.absent(),
   })  : accessToken = Value(accessToken),
         idToken = Value(idToken);
-
   static Insertable<AuthToken> custom({
     Expression<String>? accessToken,
     Expression<String>? idToken,
@@ -636,9 +606,7 @@ class $NotificationsTable extends Notifications
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-
   $NotificationsTable(this.attachedDatabase, [this._alias]);
-
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -692,7 +660,6 @@ class $NotificationsTable extends Notifications
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
       'updated_at', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
-
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -705,14 +672,11 @@ class $NotificationsTable extends Notifications
         createdAt,
         updatedAt
       ];
-
   @override
   String get aliasedName => _alias ?? actualTableName;
-
   @override
   String get actualTableName => $name;
   static const String $name = 'notifications';
-
   @override
   VerificationContext validateIntegrity(Insertable<NotificationData> instance,
       {bool isInserting = false}) {
@@ -770,7 +734,6 @@ class $NotificationsTable extends Notifications
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
-
   @override
   NotificationData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -813,7 +776,6 @@ class NotificationData extends DataClass
   final bool? isRead;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-
   const NotificationData(
       {required this.id,
       required this.title,
@@ -824,7 +786,6 @@ class NotificationData extends DataClass
       this.isRead,
       this.createdAt,
       this.updatedAt});
-
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -892,7 +853,6 @@ class NotificationData extends DataClass
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
   }
-
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -933,7 +893,6 @@ class NotificationData extends DataClass
         createdAt: createdAt.present ? createdAt.value : this.createdAt,
         updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
       );
-
   NotificationData copyWithCompanion(NotificationsCompanion data) {
     return NotificationData(
       id: data.id.present ? data.id.value : this.id,
@@ -972,7 +931,6 @@ class NotificationData extends DataClass
   @override
   int get hashCode => Object.hash(id, title, body, notificationType, notifierId,
       notifierType, isRead, createdAt, updatedAt);
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -999,7 +957,6 @@ class NotificationsCompanion extends UpdateCompanion<NotificationData> {
   final Value<DateTime?> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<int> rowid;
-
   const NotificationsCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -1012,7 +969,6 @@ class NotificationsCompanion extends UpdateCompanion<NotificationData> {
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-
   NotificationsCompanion.insert({
     required String id,
     required String title,
@@ -1027,7 +983,6 @@ class NotificationsCompanion extends UpdateCompanion<NotificationData> {
   })  : id = Value(id),
         title = Value(title),
         body = Value(body);
-
   static Insertable<NotificationData> custom({
     Expression<String>? id,
     Expression<String>? title,
@@ -1137,9 +1092,7 @@ class $JobsTable extends Jobs with TableInfo<$JobsTable, Job> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-
   $JobsTable(this.attachedDatabase, [this._alias]);
-
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -1182,18 +1135,14 @@ class $JobsTable extends Jobs with TableInfo<$JobsTable, Job> {
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
-
   @override
   List<GeneratedColumn> get $columns =>
       [id, recordId, type, userId, priority, status, failureCount];
-
   @override
   String get aliasedName => _alias ?? actualTableName;
-
   @override
   String get actualTableName => $name;
   static const String $name = 'jobs';
-
   @override
   VerificationContext validateIntegrity(Insertable<Job> instance,
       {bool isInserting = false}) {
@@ -1243,7 +1192,6 @@ class $JobsTable extends Jobs with TableInfo<$JobsTable, Job> {
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
-
   @override
   Job map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1279,7 +1227,6 @@ class Job extends DataClass implements Insertable<Job> {
   final int priority;
   final String status;
   final int failureCount;
-
   const Job(
       {required this.id,
       required this.recordId,
@@ -1288,7 +1235,6 @@ class Job extends DataClass implements Insertable<Job> {
       required this.priority,
       required this.status,
       required this.failureCount});
-
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1327,7 +1273,6 @@ class Job extends DataClass implements Insertable<Job> {
       failureCount: serializer.fromJson<int>(json['failureCount']),
     );
   }
-
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
@@ -1359,7 +1304,6 @@ class Job extends DataClass implements Insertable<Job> {
         status: status ?? this.status,
         failureCount: failureCount ?? this.failureCount,
       );
-
   Job copyWithCompanion(JobsCompanion data) {
     return Job(
       id: data.id.present ? data.id.value : this.id,
@@ -1391,7 +1335,6 @@ class Job extends DataClass implements Insertable<Job> {
   @override
   int get hashCode =>
       Object.hash(id, recordId, type, userId, priority, status, failureCount);
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1414,7 +1357,6 @@ class JobsCompanion extends UpdateCompanion<Job> {
   final Value<String> status;
   final Value<int> failureCount;
   final Value<int> rowid;
-
   const JobsCompanion({
     this.id = const Value.absent(),
     this.recordId = const Value.absent(),
@@ -1425,7 +1367,6 @@ class JobsCompanion extends UpdateCompanion<Job> {
     this.failureCount = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-
   JobsCompanion.insert({
     required String id,
     required String recordId,
@@ -1440,7 +1381,6 @@ class JobsCompanion extends UpdateCompanion<Job> {
         type = Value(type),
         userId = Value(userId),
         status = Value(status);
-
   static Insertable<Job> custom({
     Expression<String>? id,
     Expression<String>? recordId,
@@ -1532,7 +1472,6 @@ class JobsCompanion extends UpdateCompanion<Job> {
 
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
-
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $UsersTable users = $UsersTable(this);
   late final $AuthTokensTable authTokens = $AuthTokensTable(this);
@@ -1543,11 +1482,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final NotificationDao notificationDao =
       NotificationDao(this as AppDatabase);
   late final JobDao jobDao = JobDao(this as AppDatabase);
-
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
-
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
       [users, authTokens, notifications, jobs];
@@ -1580,7 +1517,6 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   ColumnFilters<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
@@ -1609,7 +1545,6 @@ class $$UsersTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   ColumnOrderings<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
@@ -1639,7 +1574,6 @@ class $$UsersTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -1758,7 +1692,6 @@ class $$AuthTokensTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   ColumnFilters<String> get accessToken => $composableBuilder(
       column: $table.accessToken, builder: (column) => ColumnFilters(column));
 
@@ -1778,7 +1711,6 @@ class $$AuthTokensTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   ColumnOrderings<String> get accessToken => $composableBuilder(
       column: $table.accessToken, builder: (column) => ColumnOrderings(column));
 
@@ -1799,7 +1731,6 @@ class $$AuthTokensTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   GeneratedColumn<String> get accessToken => $composableBuilder(
       column: $table.accessToken, builder: (column) => column);
 
@@ -1911,7 +1842,6 @@ class $$NotificationsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   ColumnFilters<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
@@ -1950,7 +1880,6 @@ class $$NotificationsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   ColumnOrderings<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
@@ -1990,7 +1919,6 @@ class $$NotificationsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -2143,7 +2071,6 @@ class $$JobsTableFilterComposer extends Composer<_$AppDatabase, $JobsTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   ColumnFilters<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
@@ -2174,7 +2101,6 @@ class $$JobsTableOrderingComposer extends Composer<_$AppDatabase, $JobsTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   ColumnOrderings<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
@@ -2207,7 +2133,6 @@ class $$JobsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -2314,17 +2239,12 @@ typedef $$JobsTableProcessedTableManager = ProcessedTableManager<
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
-
   $AppDatabaseManager(this._db);
-
   $$UsersTableTableManager get users =>
       $$UsersTableTableManager(_db, _db.users);
-
   $$AuthTokensTableTableManager get authTokens =>
       $$AuthTokensTableTableManager(_db, _db.authTokens);
-
   $$NotificationsTableTableManager get notifications =>
       $$NotificationsTableTableManager(_db, _db.notifications);
-
   $$JobsTableTableManager get jobs => $$JobsTableTableManager(_db, _db.jobs);
 }

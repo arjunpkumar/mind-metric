@@ -44,11 +44,8 @@ class BiometricLocalAuthUtils {
   Future<bool> authenticateUser({bool biometricOnly = false}) {
     return localAuthentication.authenticate(
       localizedReason: S.current.messagePleaseAuthenticateUsingBiometric,
-      options: AuthenticationOptions(
-        useErrorDialogs: false,
-        stickyAuth: true,
-        biometricOnly: biometricOnly,
-      ),
+      biometricOnly: biometricOnly,
+      persistAcrossBackgrounding: true,
     );
   }
 
