@@ -113,22 +113,18 @@ class NotificationsHandler {
     final title = notification.title;
     final body = notification.body;
     final context = navigatorKey.currentState!.overlay!.context;
-    final shouldNavigate = [
+    final showViewButton = [
       DeepLinkType.profile,
-    ].contains(notification.type)
-        ? await openAppDialog(
-            context,
-            title: title,
-            content: body,
-            positiveButtonText: S.current.btnView,
-            negativeButtonText: S.current.btnCancel,
-          )
-        : await openAppDialog(
-            context,
-            title: title,
-            content: body,
-            negativeButtonText: S.current.btnCancel,
-          );
+    ].contains(notification.type);
+    if (!context.mounted) return;
+
+    final shouldNavigate = await openAppDialog(
+      context,
+      title: title,
+      content: body,
+      positiveButtonText: showViewButton ? S.current.btnView : null,
+      negativeButtonText: S.current.btnCancel,
+    );
     if (shouldNavigate ?? false) {
       await _handleDeeplink(notification, mode);
     }

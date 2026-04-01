@@ -6,7 +6,6 @@ import 'package:drift/native.dart';
 import 'package:flutter_base/src/application/core/bloc_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3/sqlite3.dart';
-import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 LazyDatabase constructDb() {
   return LazyDatabase(() async {
@@ -17,15 +16,14 @@ LazyDatabase constructDb() {
     /*Code for Sharing and copying db file*/
 /*  await Share.shareXFiles([XFile(file.path)]);
 
-    final externalPath = await FileUtil.getDownloadPath();
-    final externalFile = File(p.join(externalPath, 'Flutter Base', 'db.sqlite'));
-    await FileUtil().copyFile(file, externalFile.path);
-*/
+    final externalPath = await fileUtil.getDownloadPath();
+    final externalFile = File(p.join(externalPath, 'Ahoy', 'db.sqlite'));
+    await fileUtil.copyFile(file, externalFile.path);*/
 
     // Also work around limitations on old Android versions
-    if (Platform.isAndroid) {
+/*    if (Platform.isAndroid) {
       await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
-    }
+    }*/
 
     // Make sqlite3 pick a more suitable location for temporary files - the
     // one from the system may be inaccessible due to sandboxing.
@@ -34,7 +32,15 @@ LazyDatabase constructDb() {
     // Explicitly tell it about the correct temporary directory.
     sqlite3.tempDirectory = cacheDB;
 
-    return NativeDatabase.createInBackground(file);
+    return NativeDatabase.createInBackground(
+      file,
+      setup: (database) {
+        // 1. Enable WAL mode
+        database.execute('PRAGMA journal_mode=WAL;');
+        // 2. Increase the timeout to give busy operations time to finish
+        database.execute('PRAGMA busy_timeout=5000;');
+      },
+    );
 
     // return NativeDatabase(file);
   });

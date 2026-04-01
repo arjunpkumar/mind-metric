@@ -27,6 +27,7 @@ class AppPage extends StatefulWidget {
   final bool isCountRequired;
   final int count;
   final bool isSearching;
+  final bool hasFixedBottomBar;
   final Function(String)? onSearchQueryChanged;
 
   final Widget? bottomNavigationBar;
@@ -48,6 +49,7 @@ class AppPage extends StatefulWidget {
     this.isCountRequired = false,
     this.count = 0,
     this.isSearching = false,
+    this.hasFixedBottomBar = false,
     this.onSearchQueryChanged,
   }) : drawerKey = Key("${key}Drawer");
 
@@ -92,8 +94,9 @@ class _AppPageState extends BaseState<AppPage> {
                   processState,
                   initState,
                 ),
-                bottomNavigationBar:
-                    !initState && processState.status == ProcessStatus.busy
+                bottomNavigationBar: widget.hasFixedBottomBar
+                    ? widget.bottomNavigationBar
+                    : !initState && processState.status == ProcessStatus.busy
                         ? null
                         : widget.bottomNavigationBar,
               );

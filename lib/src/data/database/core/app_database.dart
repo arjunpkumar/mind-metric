@@ -8,6 +8,7 @@ import 'package:flutter_base/src/data/database/job_dao.dart';
 import 'package:flutter_base/src/data/database/notification_dao.dart';
 import 'package:flutter_base/src/data/database/user_dao.dart';
 import 'package:flutter_base/src/utils/guard.dart';
+import 'package:tuple/tuple.dart';
 
 part 'app_database.g.dart';
 
@@ -130,7 +131,65 @@ class AppDatabase extends _$AppDatabase {
     }
   }*/
 
-  Future<void> _addTableMigration(
+  Future<void> _changeColumnListToNonNullable(
+    Migrator m, {
+    required TableInfo<Table, dynamic> table,
+    required String primaryKey,
+    required List<Tuple2<GeneratedColumn<String>, dynamic>> columnValueList,
+  }) async {
+    for (final tuple in columnValueList) {
+      await _changeColumnToNonNullable(
+        table: table,
+        primaryKey: primaryKey,
+        column: tuple.item1,
+        defaultValue: tuple.item2,
+      );
+    }
+
+    await m.alterTable(TableMigration(table));
+  }
+
+  Future<void> _changeColumnToNonNullable({
+    required TableInfo<Table, dynamic> table,
+    required GeneratedColumn<String> column,
+    required dynamic defaultValue,
+    required String primaryKey,
+  }) async {
+    // Fetch all rows with null values (adjust column name as needed)
+
+    if (primaryKey == column.name) {
+      await customStatement(
+        "UPDATE ${table.aliasedName} SET ${column.name} = '$defaultValue' WHERE ${column.name} IS NULL",
+      );
+    } else {
+      final result = await customSelect(
+        " SELECT * FROM ${table.aliasedName} WHERE ${column.name} IS NULL",
+      ).get();
+
+      for (final row in result) {
+        final id = row.read(primaryKey);
+        await customStatement(
+          "UPDATE ${table.aliasedName} SET ${column.name} = '$defaultValue' WHERE $primaryKey = $id",
+        );
+      }
+    }
+  }
+
+  Future<void> _renameColumnMigration(
+    Migrator m, {
+    required TableInfo<Table, dynamic> table,
+    required String oldName,
+    required GeneratedColumn<Object> newColumn,
+  }) async {
+    try {
+      await m.renameColumn(table, oldName, newColumn);
+    } catch (e) {
+      debugPrint(e.toString());
+      await m.alterTable(TableMigration(table));
+    }
+  }
+
+  Future<void> _addColumnMigration(
     int from,
     Migrator m, {
     int? tableFrom,
@@ -138,16 +197,42 @@ class AppDatabase extends _$AppDatabase {
     required TableInfo<Table, dynamic> table,
     required List<GeneratedColumn> columns,
   }) async {
-    try {
-      if ((tableFrom == null || from >= tableFrom) && from < tableTo) {
-        for (final column in columns) {
-          await m.addColumn(table, column);
+    await Guard.runAsync(
+      () async {
+        if ((tableFrom == null || from >= tableFrom) && from < tableTo) {
+          for (final column in columns) {
+            await m.addColumn(table, column);
+          }
         }
-      }
-    } catch (e) {
-      await m.alterTable(TableMigration(table));
-      debugPrint(e.toString());
-    }
+      },
+      onError: (e, s) async {
+        await m.alterTable(TableMigration(table));
+        debugPrint(e.toString());
+      },
+    );
+  }
+
+  Future<void> _deleteColumnMigration(
+    int from,
+    Migrator m, {
+    int? tableFrom,
+    required int tableTo,
+    required TableInfo<Table, dynamic> table,
+    required List<String> columns,
+  }) async {
+    await Guard.runAsync(
+      () async {
+        if ((tableFrom == null || from >= tableFrom) && from < tableTo) {
+          for (final column in columns) {
+            await m.dropColumn(table, column);
+          }
+        }
+      },
+      onError: (e, s) async {
+        await m.alterTable(TableMigration(table));
+        debugPrint(e.toString());
+      },
+    );
   }
 
   Future<void> clearUserRelatedTables() async {

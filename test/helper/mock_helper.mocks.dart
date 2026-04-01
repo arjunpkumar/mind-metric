@@ -61,6 +61,7 @@ import 'package:rxdart/rxdart.dart' as _i21;
 // ignore_for_file: unnecessary_parenthesis
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
+// ignore_for_file: invalid_use_of_internal_member
 
 class _FakeAuthService_0 extends _i1.SmartFake implements _i2.AuthService {
   _FakeAuthService_0(
@@ -280,8 +281,8 @@ class _FakeWebOptions_20 extends _i1.SmartFake implements _i10.WebOptions {
         );
 }
 
-class _FakeMacOsOptions_21 extends _i1.SmartFake implements _i10.MacOsOptions {
-  _FakeMacOsOptions_21(
+class _FakeAppleOptions_21 extends _i1.SmartFake implements _i10.AppleOptions {
+  _FakeAppleOptions_21(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -1884,13 +1885,20 @@ class MockFlutterSecureStorage extends _i1.Mock
       ) as _i10.WebOptions);
 
   @override
-  _i10.MacOsOptions get mOptions => (super.noSuchMethod(
+  _i10.AppleOptions get mOptions => (super.noSuchMethod(
         Invocation.getter(#mOptions),
-        returnValue: _FakeMacOsOptions_21(
+        returnValue: _FakeAppleOptions_21(
           this,
           Invocation.getter(#mOptions),
         ),
-      ) as _i10.MacOsOptions);
+      ) as _i10.AppleOptions);
+
+  @override
+  Map<String, List<_i38.ValueChanged<String?>>> get getListeners =>
+      (super.noSuchMethod(
+        Invocation.getter(#getListeners),
+        returnValue: <String, List<_i38.ValueChanged<String?>>>{},
+      ) as Map<String, List<_i38.ValueChanged<String?>>>);
 
   @override
   void registerListener({
@@ -1950,11 +1958,11 @@ class MockFlutterSecureStorage extends _i1.Mock
   _i26.Future<void> write({
     required String? key,
     required String? value,
-    _i10.IOSOptions? iOptions,
+    _i10.AppleOptions? iOptions,
     _i10.AndroidOptions? aOptions,
     _i10.LinuxOptions? lOptions,
     _i10.WebOptions? webOptions,
-    _i10.MacOsOptions? mOptions,
+    _i10.AppleOptions? mOptions,
     _i10.WindowsOptions? wOptions,
   }) =>
       (super.noSuchMethod(
@@ -1979,11 +1987,11 @@ class MockFlutterSecureStorage extends _i1.Mock
   @override
   _i26.Future<String?> read({
     required String? key,
-    _i10.IOSOptions? iOptions,
+    _i10.AppleOptions? iOptions,
     _i10.AndroidOptions? aOptions,
     _i10.LinuxOptions? lOptions,
     _i10.WebOptions? webOptions,
-    _i10.MacOsOptions? mOptions,
+    _i10.AppleOptions? mOptions,
     _i10.WindowsOptions? wOptions,
   }) =>
       (super.noSuchMethod(
@@ -2006,11 +2014,11 @@ class MockFlutterSecureStorage extends _i1.Mock
   @override
   _i26.Future<bool> containsKey({
     required String? key,
-    _i10.IOSOptions? iOptions,
+    _i10.AppleOptions? iOptions,
     _i10.AndroidOptions? aOptions,
     _i10.LinuxOptions? lOptions,
     _i10.WebOptions? webOptions,
-    _i10.MacOsOptions? mOptions,
+    _i10.AppleOptions? mOptions,
     _i10.WindowsOptions? wOptions,
   }) =>
       (super.noSuchMethod(
@@ -2033,11 +2041,11 @@ class MockFlutterSecureStorage extends _i1.Mock
   @override
   _i26.Future<void> delete({
     required String? key,
-    _i10.IOSOptions? iOptions,
+    _i10.AppleOptions? iOptions,
     _i10.AndroidOptions? aOptions,
     _i10.LinuxOptions? lOptions,
     _i10.WebOptions? webOptions,
-    _i10.MacOsOptions? mOptions,
+    _i10.AppleOptions? mOptions,
     _i10.WindowsOptions? wOptions,
   }) =>
       (super.noSuchMethod(
@@ -2060,11 +2068,11 @@ class MockFlutterSecureStorage extends _i1.Mock
 
   @override
   _i26.Future<Map<String, String>> readAll({
-    _i10.IOSOptions? iOptions,
+    _i10.AppleOptions? iOptions,
     _i10.AndroidOptions? aOptions,
     _i10.LinuxOptions? lOptions,
     _i10.WebOptions? webOptions,
-    _i10.MacOsOptions? mOptions,
+    _i10.AppleOptions? mOptions,
     _i10.WindowsOptions? wOptions,
   }) =>
       (super.noSuchMethod(
@@ -2085,11 +2093,11 @@ class MockFlutterSecureStorage extends _i1.Mock
 
   @override
   _i26.Future<void> deleteAll({
-    _i10.IOSOptions? iOptions,
+    _i10.AppleOptions? iOptions,
     _i10.AndroidOptions? aOptions,
     _i10.LinuxOptions? lOptions,
     _i10.WebOptions? webOptions,
-    _i10.MacOsOptions? mOptions,
+    _i10.AppleOptions? mOptions,
     _i10.WindowsOptions? wOptions,
   }) =>
       (super.noSuchMethod(
@@ -2254,10 +2262,10 @@ class MockJobRepository extends _i1.Mock implements _i23.JobRepository {
       ) as _i22.JobDao);
 
   @override
-  set dao(_i22.JobDao? _dao) => super.noSuchMethod(
+  set dao(_i22.JobDao? value) => super.noSuchMethod(
         Invocation.setter(
           #dao,
-          _dao,
+          value,
         ),
         returnValueForMissingStub: null,
       );
@@ -2501,10 +2509,10 @@ class MockJobTimer extends _i1.Mock implements _i13.JobTimer {
   }
 
   @override
-  set timer(_i26.Timer? _timer) => super.noSuchMethod(
+  set timer(_i26.Timer? value) => super.noSuchMethod(
         Invocation.setter(
           #timer,
-          _timer,
+          value,
         ),
         returnValueForMissingStub: null,
       );
