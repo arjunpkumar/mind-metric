@@ -1,4 +1,4 @@
-import 'package:flutter_base/src/application/core/process_state.dart';
+import 'package:mind_metric/src/application/core/process_state.dart';
 
 abstract class BaseBlocEvent {
   ProcessState processState = ProcessState.initial();

@@ -4,8 +4,8 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_base/src/utils/extensions.dart';
 import 'package:http/http.dart' as http;
+import 'package:mind_metric/src/utils/extensions.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 /// Information about the app's current version, and the most recent version

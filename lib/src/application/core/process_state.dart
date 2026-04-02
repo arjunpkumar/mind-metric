@@ -1,4 +1,4 @@
-import 'package:flutter_base/generated/l10n.dart';
+import 'package:mind_metric/generated/l10n.dart';
 
 enum ProcessStatus { initial, busy, completed, error }
 

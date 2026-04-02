@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_base/src/data/core/config_repository.dart';
-import 'package:flutter_base/src/utils/network_utils.dart';
+import 'package:mind_metric/src/data/core/config_repository.dart';
+import 'package:mind_metric/src/utils/network_utils.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 abstract class Flavor {

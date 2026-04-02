@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
 
 part 'notification_dao.g.dart';
 

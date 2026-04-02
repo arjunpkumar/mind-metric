@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_base/config.dart';
-import 'package:flutter_base/src/data/auth/auth_repository.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
-import 'package:flutter_base/src/utils/string_utils.dart';
+import 'package:mind_metric/config.dart';
+import 'package:mind_metric/src/data/auth/auth_repository.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/utils/string_utils.dart';
 
 Future<Options> getDioOptions({required AuthRepository authRepository}) async {
   final authToken = await authRepository.getActiveToken();

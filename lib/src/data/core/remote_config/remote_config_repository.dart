@@ -1,8 +1,8 @@
-import 'package:flutter_base/src/data/core/config_repository.dart';
-import 'package:flutter_base/src/data/core/remote_config/remote_config_service.dart';
-import 'package:flutter_base/src/data/database/remote_config_dao.dart';
-import 'package:flutter_base/src/data/database/settings_dao.dart';
-import 'package:flutter_base/src/utils/guard.dart';
+import 'package:mind_metric/src/data/core/config_repository.dart';
+import 'package:mind_metric/src/data/core/remote_config/remote_config_service.dart';
+import 'package:mind_metric/src/data/database/remote_config_dao.dart';
+import 'package:mind_metric/src/data/database/settings_dao.dart';
+import 'package:mind_metric/src/utils/guard.dart';
 
 /// Created by Jemsheer K D on 25 September, 2023.
 /// File Name : remote_config_repository

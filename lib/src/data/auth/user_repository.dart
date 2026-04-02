@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_base/src/core/exceptions.dart';
-import 'package:flutter_base/src/data/auth/user_service.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
-import 'package:flutter_base/src/data/database/user_dao.dart';
-import 'package:flutter_base/src/utils/string_utils.dart';
+import 'package:mind_metric/src/core/exceptions.dart';
+import 'package:mind_metric/src/data/auth/user_service.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/data/database/user_dao.dart';
+import 'package:mind_metric/src/utils/string_utils.dart';
 
 class UserRepository {
   final UserDao userDao;

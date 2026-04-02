@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/src/presentation/widgets/loader_widget.dart';
+import 'package:mind_metric/src/presentation/widgets/loader_widget.dart';
 
 class LoaderUtil {
   static Future<void> showLoaderDialog(

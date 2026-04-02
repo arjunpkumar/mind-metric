@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter_base/src/application/sync/job_manager.dart';
+import 'package:mind_metric/src/application/sync/job_manager.dart';
 
 /// Created by Jemsheer K D on 21 February, 2025.
 /// File Name : job_timer

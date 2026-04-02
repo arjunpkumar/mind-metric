@@ -1,13 +1,13 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_base/config.dart';
-import 'package:flutter_base/generated/l10n.dart';
-import 'package:flutter_base/src/application/core/base_bloc_event.dart';
-import 'package:flutter_base/src/application/core/base_bloc_state.dart';
-import 'package:flutter_base/src/application/core/process_state.dart';
-import 'package:flutter_base/src/core/exceptions.dart';
-import 'package:flutter_base/src/utils/network_validator.dart';
-import 'package:flutter_base/src/utils/string_utils.dart';
+import 'package:mind_metric/config.dart';
+import 'package:mind_metric/generated/l10n.dart';
+import 'package:mind_metric/src/application/core/base_bloc_event.dart';
+import 'package:mind_metric/src/application/core/base_bloc_state.dart';
+import 'package:mind_metric/src/application/core/process_state.dart';
+import 'package:mind_metric/src/core/exceptions.dart';
+import 'package:mind_metric/src/utils/network_validator.dart';
+import 'package:mind_metric/src/utils/string_utils.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/src/presentation/core/theme/text_styles.dart';
+import 'package:mind_metric/src/presentation/core/theme/text_styles.dart';
 
 ///Returns true if Positive Button clicked, false otherwise
 Future<bool?> openAppDialog(

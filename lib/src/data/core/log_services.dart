@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
 
 class Logger {
   static Logger? _instance;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/presentation/core/theme/colors.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/presentation/core/theme/colors.dart';
 
 class InfoFieldWidget extends StatelessWidget {
   final String fieldTitle;

@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_base/src/application/sync/syncable_provider.dart';
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/core/exceptions.dart';
-import 'package:flutter_base/src/data/auth/user_repository.dart';
-import 'package:flutter_base/src/data/core/sync/job_repository.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
-import 'package:flutter_base/src/data/database/job_dao.dart';
-import 'package:flutter_base/src/utils/network_validator.dart';
+import 'package:mind_metric/src/application/sync/syncable_provider.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/core/exceptions.dart';
+import 'package:mind_metric/src/data/auth/user_repository.dart';
+import 'package:mind_metric/src/data/core/sync/job_repository.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/data/database/job_dao.dart';
+import 'package:mind_metric/src/utils/network_validator.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Created by Jemsheer K D on 21 February, 2025.

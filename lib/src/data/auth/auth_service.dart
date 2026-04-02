@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_base/config.dart';
-import 'package:flutter_base/generated/l10n.dart';
-import 'package:flutter_base/src/core/app.dart';
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
-import 'package:flutter_base/src/presentation/web_view/web_view_page.dart';
-import 'package:flutter_base/src/utils/string_utils.dart';
+import 'package:mind_metric/config.dart';
+import 'package:mind_metric/generated/l10n.dart';
+import 'package:mind_metric/src/core/app.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/presentation/web_view/web_view_page.dart';
+import 'package:mind_metric/src/utils/string_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:url_launcher/url_launcher.dart';

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/generated/l10n.dart';
-import 'package:flutter_base/src/application/bloc/home/home_bloc.dart';
-import 'package:flutter_base/src/application/bloc/home/home_state.dart';
-import 'package:flutter_base/src/presentation/core/app_page.dart';
-import 'package:flutter_base/src/presentation/core/base_state.dart';
+import 'package:mind_metric/generated/l10n.dart';
+import 'package:mind_metric/src/application/bloc/home/home_bloc.dart';
+import 'package:mind_metric/src/application/bloc/home/home_state.dart';
+import 'package:mind_metric/src/presentation/core/app_page.dart';
+import 'package:mind_metric/src/presentation/core/base_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Created by Jemsheer K D on 21 February, 2025.

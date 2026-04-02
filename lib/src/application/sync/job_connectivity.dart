@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter_base/src/application/sync/job_manager.dart';
-import 'package:flutter_base/src/application/sync/job_timer.dart';
-import 'package:flutter_base/src/data/auth/auth_repository.dart';
-import 'package:flutter_base/src/utils/network_validator.dart';
+import 'package:mind_metric/src/application/sync/job_manager.dart';
+import 'package:mind_metric/src/application/sync/job_timer.dart';
+import 'package:mind_metric/src/data/auth/auth_repository.dart';
+import 'package:mind_metric/src/utils/network_validator.dart';
 
 /// Created by Jemsheer K D on 21 February, 2025.
 /// File Name : job_connectivity

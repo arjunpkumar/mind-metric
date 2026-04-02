@@ -1,7 +1,7 @@
-import 'package:flutter_base/src/application/sync/job_timer.dart';
-import 'package:flutter_base/src/data/database/auth_settings_dao.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
-import 'package:flutter_base/src/data/database/settings_dao.dart';
+import 'package:mind_metric/src/application/sync/job_timer.dart';
+import 'package:mind_metric/src/data/database/auth_settings_dao.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/data/database/settings_dao.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Created by Jemsheer K D on 21 February, 2025.

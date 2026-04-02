@@ -1,10 +1,10 @@
-import 'package:flutter_base/src/application/bloc/web_view/web_view_event.dart';
-import 'package:flutter_base/src/application/bloc/web_view/web_view_state.dart';
-import 'package:flutter_base/src/application/core/base_bloc.dart';
-import 'package:flutter_base/src/data/auth/auth_repository.dart';
-import 'package:flutter_base/src/utils/file_util.dart';
-import 'package:flutter_base/src/utils/network_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mind_metric/src/application/bloc/web_view/web_view_event.dart';
+import 'package:mind_metric/src/application/bloc/web_view/web_view_state.dart';
+import 'package:mind_metric/src/application/core/base_bloc.dart';
+import 'package:mind_metric/src/data/auth/auth_repository.dart';
+import 'package:mind_metric/src/utils/file_util.dart';
+import 'package:mind_metric/src/utils/network_utils.dart';
 
 class WebViewBloc extends BaseBloc<WebViewEvent, WebViewState, WebViewUIEvent> {
   final AuthRepository authRepository;

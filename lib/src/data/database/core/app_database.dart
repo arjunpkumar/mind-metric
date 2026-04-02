@@ -2,12 +2,12 @@ import 'package:drift/drift.dart';
 import 'package:drift/isolate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_base/src/data/database/auth_token_dao.dart';
-import 'package:flutter_base/src/data/database/core/shared_db.dart';
-import 'package:flutter_base/src/data/database/job_dao.dart';
-import 'package:flutter_base/src/data/database/notification_dao.dart';
-import 'package:flutter_base/src/data/database/user_dao.dart';
-import 'package:flutter_base/src/utils/guard.dart';
+import 'package:mind_metric/src/data/database/auth_token_dao.dart';
+import 'package:mind_metric/src/data/database/core/shared_db.dart';
+import 'package:mind_metric/src/data/database/job_dao.dart';
+import 'package:mind_metric/src/data/database/notification_dao.dart';
+import 'package:mind_metric/src/data/database/user_dao.dart';
+import 'package:mind_metric/src/utils/guard.dart';
 import 'package:tuple/tuple.dart';
 
 part 'app_database.g.dart';

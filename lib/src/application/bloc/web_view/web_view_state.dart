@@ -1,4 +1,4 @@
-import 'package:flutter_base/src/application/core/base_bloc_state.dart';
+import 'package:mind_metric/src/application/core/base_bloc_state.dart';
 
 class WebViewState extends BaseBlocState {
   Map<String, String>? headers;

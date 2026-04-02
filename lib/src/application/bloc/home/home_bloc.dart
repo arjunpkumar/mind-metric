@@ -1,7 +1,7 @@
-import 'package:flutter_base/src/application/bloc/home/home_event.dart';
-import 'package:flutter_base/src/application/bloc/home/home_state.dart';
-import 'package:flutter_base/src/application/core/base_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mind_metric/src/application/bloc/home/home_event.dart';
+import 'package:mind_metric/src/application/bloc/home/home_state.dart';
+import 'package:mind_metric/src/application/core/base_bloc.dart';
 
 /// Created by Jemsheer K D on 21 February, 2025.
 /// File Name : home_bloc

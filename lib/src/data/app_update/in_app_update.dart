@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:flutter_base/src/utils/extensions.dart';
+import 'package:mind_metric/src/utils/extensions.dart';
 
 class UpdateAvailability {
   UpdateAvailability._();

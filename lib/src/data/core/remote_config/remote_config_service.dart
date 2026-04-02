@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_base/src/core/exceptions.dart';
-import 'package:flutter_base/src/data/core/config_repository.dart';
-import 'package:flutter_base/src/data/core/proxy/proxy_service.dart';
-import 'package:flutter_base/src/utils/extensions.dart';
+import 'package:mind_metric/src/core/exceptions.dart';
+import 'package:mind_metric/src/data/core/config_repository.dart';
+import 'package:mind_metric/src/data/core/proxy/proxy_service.dart';
+import 'package:mind_metric/src/utils/extensions.dart';
 
 class RemoteConfigService {
   final ConfigRepository configRepository;

@@ -1,5 +1,5 @@
-import 'package:flutter_base/config.dart';
-import 'package:flutter_base/src/utils/error_logger.dart';
+import 'package:mind_metric/config.dart';
+import 'package:mind_metric/src/utils/error_logger.dart';
 
 class CustomException implements Exception {
   final String code;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/src/core/app_constants.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
 
 class DynamicGridLayout extends StatelessWidget {
   final List<Widget> list;

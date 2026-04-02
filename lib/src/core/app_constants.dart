@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart' as dio;
-import 'package:flutter_base/config.dart';
-import 'package:flutter_base/src/utils/network_auth_interceptor.dart';
-import 'package:flutter_base/src/utils/network_usage_interceptor.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:mind_metric/config.dart';
+import 'package:mind_metric/src/utils/network_auth_interceptor.dart';
+import 'package:mind_metric/src/utils/network_usage_interceptor.dart';
 
 const androidPlayStoreUrl =
     'https://play.google.com/store/apps/details?id=com.thinkpalm.flutterbase';

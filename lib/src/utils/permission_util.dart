@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_base/src/core/app.dart';
+import 'package:mind_metric/src/core/app.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /// Created by Jemsheer K D on 21 November, 2023.

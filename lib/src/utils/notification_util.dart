@@ -1,6 +1,6 @@
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
-import 'package:flutter_base/src/utils/network_validator.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/utils/network_validator.dart';
 
 class NotificationUtil {
   final NetworkValidator networkValidator;

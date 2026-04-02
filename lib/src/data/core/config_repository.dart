@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_base/src/utils/extensions.dart';
-import 'package:flutter_base/src/utils/guard.dart';
+import 'package:mind_metric/src/utils/extensions.dart';
+import 'package:mind_metric/src/utils/guard.dart';
 
 class ConfigRepository {
   static ConfigRepository? _instance;

@@ -1,4 +1,4 @@
-import 'package:flutter_base/src/data/database/base_hive_dao.dart';
+import 'package:mind_metric/src/data/database/base_hive_dao.dart';
 import 'package:hive/hive.dart';
 
 class AuthSettingsDao extends BaseHiveDao {

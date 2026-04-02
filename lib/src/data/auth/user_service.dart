@@ -1,6 +1,6 @@
-import 'package:flutter_base/src/data/core/config_repository.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
-import 'package:flutter_base/src/utils/extensions.dart';
+import 'package:mind_metric/src/data/core/config_repository.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/utils/extensions.dart';
 
 class UserService {
   final ConfigRepository configRepository;

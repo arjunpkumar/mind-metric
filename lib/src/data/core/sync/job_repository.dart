@@ -1,6 +1,6 @@
-import 'package:flutter_base/src/core/exceptions.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
-import 'package:flutter_base/src/data/database/job_dao.dart';
+import 'package:mind_metric/src/core/exceptions.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/data/database/job_dao.dart';
 
 /// Created by Jemsheer K D on 21 February, 2025.
 /// File Name : job_repository

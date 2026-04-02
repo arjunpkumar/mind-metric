@@ -1,6 +1,6 @@
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/core/exceptions.dart';
-import 'package:flutter_base/src/data/core/config_repository.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/core/exceptions.dart';
+import 'package:mind_metric/src/data/core/config_repository.dart';
 
 /// Created by Jemsheer K D on 18 July, 2024.
 /// File Name : proxy_service

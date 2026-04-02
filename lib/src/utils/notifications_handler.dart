@@ -1,15 +1,15 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_base/generated/l10n.dart';
-import 'package:flutter_base/src/application/model/notification_message.dart';
-import 'package:flutter_base/src/core/app.dart';
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/data/auth/auth_repository.dart';
-import 'package:flutter_base/src/data/auth/user_repository.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
-import 'package:flutter_base/src/presentation/widgets/dialog/app_dialog.dart';
-import 'package:flutter_base/src/utils/deeplink_navigator.dart';
-import 'package:flutter_base/src/utils/notification_util.dart';
+import 'package:mind_metric/generated/l10n.dart';
+import 'package:mind_metric/src/application/model/notification_message.dart';
+import 'package:mind_metric/src/core/app.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/data/auth/auth_repository.dart';
+import 'package:mind_metric/src/data/auth/user_repository.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/presentation/widgets/dialog/app_dialog.dart';
+import 'package:mind_metric/src/utils/deeplink_navigator.dart';
+import 'package:mind_metric/src/utils/notification_util.dart';
 
 enum NotificationMode { onLaunch, onResume, onMessage }
 

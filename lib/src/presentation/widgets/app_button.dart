@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/presentation/core/theme/text_styles.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/presentation/core/theme/text_styles.dart';
 
 class AppButton extends StatelessWidget {
   final Widget? child;

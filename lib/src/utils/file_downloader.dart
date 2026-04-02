@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:flutter_base/src/application/model/file_info.dart';
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/data/auth/auth_repository.dart';
-import 'package:flutter_base/src/utils/extensions.dart';
-import 'package:flutter_base/src/utils/network_utils.dart';
-import 'package:flutter_base/src/utils/string_utils.dart';
+import 'package:mind_metric/src/application/model/file_info.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/data/auth/auth_repository.dart';
+import 'package:mind_metric/src/utils/extensions.dart';
+import 'package:mind_metric/src/utils/network_utils.dart';
+import 'package:mind_metric/src/utils/string_utils.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 

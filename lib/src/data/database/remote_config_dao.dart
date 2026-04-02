@@ -1,5 +1,5 @@
-import 'package:flutter_base/src/data/database/base_hive_dao.dart';
-import 'package:flutter_base/src/utils/extensions.dart';
+import 'package:mind_metric/src/data/database/base_hive_dao.dart';
+import 'package:mind_metric/src/utils/extensions.dart';
 import 'package:hive/hive.dart';
 
 /// Created by Jemsheer K D on 25 September, 2023.

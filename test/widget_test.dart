@@ -6,7 +6,7 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_base/src/core/app.dart';
+import 'package:mind_metric/src/core/app.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

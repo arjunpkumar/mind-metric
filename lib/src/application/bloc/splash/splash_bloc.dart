@@ -1,8 +1,8 @@
-import 'package:flutter_base/src/application/bloc/splash/splash_event.dart';
-import 'package:flutter_base/src/application/bloc/splash/splash_state.dart';
-import 'package:flutter_base/src/application/core/base_bloc.dart';
-import 'package:flutter_base/src/data/auth/auth_repository.dart';
-import 'package:flutter_base/src/data/auth/user_repository.dart';
+import 'package:mind_metric/src/application/bloc/splash/splash_event.dart';
+import 'package:mind_metric/src/application/bloc/splash/splash_state.dart';
+import 'package:mind_metric/src/application/core/base_bloc.dart';
+import 'package:mind_metric/src/data/auth/auth_repository.dart';
+import 'package:mind_metric/src/data/auth/user_repository.dart';
 
 class SplashBloc extends BaseBloc<SplashEvent, SplashState, SplashUIEvent> {
   final AuthRepository authRepository;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/generated/l10n.dart';
-import 'package:flutter_base/src/presentation/core/theme/text_styles.dart';
-import 'package:flutter_base/src/presentation/widgets/dialog/app_dialog.dart';
-import 'package:flutter_base/src/utils/string_utils.dart';
+import 'package:mind_metric/generated/l10n.dart';
+import 'package:mind_metric/src/presentation/core/theme/text_styles.dart';
+import 'package:mind_metric/src/presentation/widgets/dialog/app_dialog.dart';
+import 'package:mind_metric/src/utils/string_utils.dart';
 import 'package:tuple/tuple.dart';
 
 abstract class BaseState<T extends StatefulWidget> extends State<T> {

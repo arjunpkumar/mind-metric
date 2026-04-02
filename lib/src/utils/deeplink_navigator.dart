@@ -1,5 +1,5 @@
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/utils/share_preference_util.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/utils/share_preference_util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DeeplinkNavigator {

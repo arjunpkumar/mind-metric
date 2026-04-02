@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/utils/extensions.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/utils/extensions.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 /// Created by Jemsheer K D on 11 March, 2025.

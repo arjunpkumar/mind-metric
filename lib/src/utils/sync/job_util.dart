@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter_base/src/application/sync/job_manager.dart';
-import 'package:flutter_base/src/core/exceptions.dart';
-import 'package:flutter_base/src/data/core/sync/job_repository.dart';
-import 'package:flutter_base/src/data/database/core/app_database.dart';
-import 'package:flutter_base/src/data/database/job_dao.dart';
+import 'package:mind_metric/src/application/sync/job_manager.dart';
+import 'package:mind_metric/src/core/exceptions.dart';
+import 'package:mind_metric/src/data/core/sync/job_repository.dart';
+import 'package:mind_metric/src/data/database/core/app_database.dart';
+import 'package:mind_metric/src/data/database/job_dao.dart';
 import 'package:uuid/uuid.dart';
 
 /// Created by Jemsheer K D on 24 February, 2025.

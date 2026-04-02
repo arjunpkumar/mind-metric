@@ -1,5 +1,5 @@
-import 'package:flutter_base/src/application/sync/syncable.dart';
-import 'package:flutter_base/src/core/exceptions.dart';
+import 'package:mind_metric/src/application/sync/syncable.dart';
+import 'package:mind_metric/src/core/exceptions.dart';
 
 /// Created by Jemsheer K D on 21 February, 2025.
 /// File Name : syncable_provider

@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_base/src/utils/error_logger.dart';
+import 'package:mind_metric/src/utils/error_logger.dart';
 
 /// Created by Jemsheer K D on 15 September, 2023.
 /// File Name : guard

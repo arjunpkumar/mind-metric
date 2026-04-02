@@ -1,5 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_base/src/data/fcm/device_token_service.dart';
+import 'package:mind_metric/src/data/fcm/device_token_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class DeviceTokenRepository {

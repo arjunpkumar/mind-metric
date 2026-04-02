@@ -1,8 +1,8 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_base/config.dart';
-import 'package:flutter_base/src/core/app.dart';
-import 'package:flutter_base/src/presentation/widgets/dialog/app_dialog.dart';
+import 'package:mind_metric/config.dart';
+import 'package:mind_metric/src/core/app.dart';
+import 'package:mind_metric/src/presentation/widgets/dialog/app_dialog.dart';
 
 class ErrorLogger {
   static ErrorLogger? _instance;

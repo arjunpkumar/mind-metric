@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/generated/l10n.dart';
-import 'package:flutter_base/src/core/app_constants.dart';
-import 'package:flutter_base/src/presentation/widgets/app_button.dart';
-import 'package:flutter_base/src/utils/string_utils.dart';
+import 'package:mind_metric/generated/l10n.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/presentation/widgets/app_button.dart';
+import 'package:mind_metric/src/utils/string_utils.dart';
 
 class ErrorMessageWidget extends StatelessWidget {
   final String? title;

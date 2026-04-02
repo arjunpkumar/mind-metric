@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/src/application/core/process_state.dart';
-import 'package:flutter_base/src/presentation/core/base_state.dart';
-import 'package:flutter_base/src/presentation/core/theme/colors.dart';
-import 'package:flutter_base/src/presentation/widgets/app_appbar.dart';
-import 'package:flutter_base/src/presentation/widgets/error_widget.dart';
-import 'package:flutter_base/src/presentation/widgets/loader_widget.dart';
-import 'package:flutter_base/src/utils/extensions.dart';
+import 'package:mind_metric/src/application/core/process_state.dart';
+import 'package:mind_metric/src/presentation/core/base_state.dart';
+import 'package:mind_metric/src/presentation/core/theme/colors.dart';
+import 'package:mind_metric/src/presentation/widgets/app_appbar.dart';
+import 'package:mind_metric/src/presentation/widgets/error_widget.dart';
+import 'package:mind_metric/src/presentation/widgets/loader_widget.dart';
+import 'package:mind_metric/src/utils/extensions.dart';
 
 /// Created by Jemsheer K D on 07 May, 2023.
 /// File Name : app_page

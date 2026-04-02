@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_base/src/presentation/core/theme/colors.dart';
-import 'package:flutter_base/src/presentation/core/theme/text_styles.dart';
-import 'package:flutter_base/src/utils/extensions.dart';
+import 'package:mind_metric/src/presentation/core/theme/colors.dart';
+import 'package:mind_metric/src/presentation/core/theme/text_styles.dart';
+import 'package:mind_metric/src/utils/extensions.dart';
 
 ThemeData getAppThemeData(BuildContext context) {
   return Theme.of(context).copyWith(
