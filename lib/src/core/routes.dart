@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mind_metric/src/application/bloc/web_view/web_view_bloc.dart';
 import 'package:mind_metric/src/application/core/bloc_provider.dart';
+import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 import 'package:mind_metric/src/presentation/splash/splash_page.dart';
 import 'package:mind_metric/src/presentation/web_view/web_view_page.dart';
 
@@ -10,10 +11,10 @@ final Map<String, Widget Function(BuildContext context)> routes = {
         create: (_) => provideSplashBloc(),
         child: const SplashPage(),
       ),
-/*  LoginPage.route: (_) => BlocProvider(
-    create: (_) => provideLoginBloc(),
-    child: const LoginPage(),
-  ),*/
+  LoginPage.route: (_) => BlocProvider(
+        create: (_) => provideLoginBloc(),
+        child: LoginPage(),
+      ),
 };
 
 Route<dynamic>? generatedRoutes(RouteSettings settings) {

@@ -43,7 +43,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "hintDefaultSearch": MessageLookupByLibrary.simpleMessage("Search..."),
     "labelCancelXConfirmation": m0,
     "labelDocument": MessageLookupByLibrary.simpleMessage("Document"),
-    "labelFlutterBase": MessageLookupByLibrary.simpleMessage("FlutterBase"),
+    "labelFlutterBase": MessageLookupByLibrary.simpleMessage("Mind Metric"),
     "labelImage": MessageLookupByLibrary.simpleMessage("Image"),
     "labelNoConnection": MessageLookupByLibrary.simpleMessage("No Connection"),
     "labelNoData": MessageLookupByLibrary.simpleMessage("No Data"),
@@ -68,7 +68,7 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "Please Authenticate Using Biometric or Device Lock Mechanism",
         ),
-    "titleApp": MessageLookupByLibrary.simpleMessage("FlutterBase"),
+    "titleApp": MessageLookupByLibrary.simpleMessage("Mind Metric"),
     "titleFlexibleUpdate": MessageLookupByLibrary.simpleMessage(
       "Update Available",
     ),

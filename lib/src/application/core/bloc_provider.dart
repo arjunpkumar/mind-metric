@@ -1,4 +1,5 @@
 import 'package:image_picker/image_picker.dart';
+import 'package:mind_metric/src/application/bloc/auth/login/login_bloc.dart';
 import 'package:mind_metric/src/application/bloc/splash/splash_bloc.dart';
 import 'package:mind_metric/src/application/bloc/web_view/web_view_bloc.dart';
 import 'package:mind_metric/src/data/core/repository_provider.dart';
@@ -39,6 +40,10 @@ NotificationUtil provideNotificationUtil() {
   return NotificationUtil(
     networkValidator: provideNetworkValidator(),
   );
+}
+
+LoginBloc provideLoginBloc() {
+  return LoginBloc();
 }
 
 FileUtil provideFileUtil() {

@@ -1,7 +1,7 @@
 {
   "_locale": "en",
-  "labelFlutterBase": "FlutterBase",
-  "titleApp": "FlutterBase",
+  "labelFlutterBase": "Mind Metric",
+  "titleApp": "Mind Metric",
   "titleHome": "Home",
   "messagePleaseAuthenticateUsingBiometric": "Please Authenticate Using Biometric or Device Lock Mechanism",
   "errWebView": "Error Loading The Web Page. Try Again Later",

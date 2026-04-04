@@ -178,7 +178,11 @@ class AppIcons {
   AppIcons._();
 
   static const String kBgImage = 'assets/images/bg.png';
+  static const String kBackGroundImage = 'assets/images/background.png';
   static const String kBgLandscape = 'assets/images/bg_landscape.jpg';
+
+  /// Vector logo for splash (crisp at any size).
+  static const String kHeadsLogoSvg = 'assets/images/heads_logo.svg';
   static const String kDownArrow = 'assets/images/ic_down_arrow.svg';
   static const String kLogo = 'assets/images/heads_logo.png';
   static const String kAppLogo = 'assets/images/splash_logo.png';

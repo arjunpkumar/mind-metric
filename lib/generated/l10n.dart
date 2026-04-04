@@ -59,19 +59,19 @@ class S {
     return Intl.message('en', name: '_locale', desc: '', args: []);
   }
 
-  /// `FlutterBase`
+  /// `Mind Metric`
   String get labelFlutterBase {
     return Intl.message(
-      'FlutterBase',
+      'Mind Metric',
       name: 'labelFlutterBase',
       desc: '',
       args: [],
     );
   }
 
-  /// `FlutterBase`
+  /// `Mind Metric`
   String get titleApp {
-    return Intl.message('FlutterBase', name: 'titleApp', desc: '', args: []);
+    return Intl.message('Mind Metric', name: 'titleApp', desc: '', args: []);
   }
 
   /// `Home`
