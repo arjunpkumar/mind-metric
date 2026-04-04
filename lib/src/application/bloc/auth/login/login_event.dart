@@ -1,9 +1,20 @@
-import 'package:mind_metric/src/application/core/base_bloc_event.dart';
+/// Base event for [LoginBloc].
+abstract class LoginEvent {
+  const LoginEvent();
+}
 
-/// Created by Jemsheer K D on 21 February, 2025.
-/// File Name : login_event
-/// Project : FlutterBase
+class LoginEmailChanged extends LoginEvent {
+  const LoginEmailChanged(this.email);
 
-class LoginEvent extends BaseBlocEvent {}
+  final String email;
+}
 
-class LoginInit extends LoginEvent {}
+class LoginPasswordChanged extends LoginEvent {
+  const LoginPasswordChanged(this.password);
+
+  final String password;
+}
+
+class LoginSubmitted extends LoginEvent {
+  const LoginSubmitted();
+}

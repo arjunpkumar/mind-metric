@@ -1,25 +1,72 @@
-import 'package:mind_metric/src/application/core/base_bloc_state.dart';
+import 'package:equatable/equatable.dart';
 
-/// Created by Jemsheer K D on 21 February, 2025.
-/// File Name : login_state
-/// Project : FlutterBase
+class _Unset {
+  const _Unset();
+}
 
-class LoginState extends BaseBlocState {
-  String dummy = "";
+const Object _unset = _Unset();
 
-  LoginState({
-    this.dummy = "",
+enum LoginFormStatus {
+  pure,
+  validating,
+  submissionInProgress,
+  submissionSuccess,
+  submissionFailure,
+}
+
+class LoginState extends Equatable {
+  const LoginState({
+    this.email = '',
+    this.password = '',
+    this.status = LoginFormStatus.pure,
+    this.emailError,
+    this.passwordError,
+    this.submissionErrorMessage,
   });
 
-  @override
+  final String email;
+  final String password;
+  final LoginFormStatus status;
+  final String? emailError;
+  final String? passwordError;
+  final String? submissionErrorMessage;
+
+  factory LoginState.initial() => const LoginState();
+
   LoginState copyWith({
-    String? dummy,
+    String? email,
+    String? password,
+    LoginFormStatus? status,
+    Object? emailError = _unset,
+    Object? passwordError = _unset,
+    Object? submissionErrorMessage = _unset,
+    bool clearSubmissionError = false,
   }) {
     return LoginState(
-      dummy: dummy ?? this.dummy,
-    )
-      ..processState = processState
-      ..canPop = canPop
-      ..isInitCompleted = isInitCompleted;
+      email: email ?? this.email,
+      password: password ?? this.password,
+      status: status ?? this.status,
+      emailError: identical(emailError, _unset)
+          ? this.emailError
+          : emailError as String?,
+      passwordError: identical(passwordError, _unset)
+          ? this.passwordError
+          : passwordError as String?,
+      submissionErrorMessage: clearSubmissionError
+          ? null
+          : identical(submissionErrorMessage, _unset)
+              ? this.submissionErrorMessage
+              : submissionErrorMessage as String?,
+    );
   }
+
+  @override
+  List<Object?> get props => [
+        email,
+        password,
+        status,
+        emailError,
+        passwordError,
+        submissionErrorMessage,
+      ];
 }

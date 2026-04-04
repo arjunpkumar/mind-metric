@@ -2,12 +2,16 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:mind_metric/src/application/sync/job_connectivity.dart';
 import 'package:mind_metric/src/application/sync/job_manager.dart';
 import 'package:mind_metric/src/application/sync/job_timer.dart';
 import 'package:mind_metric/src/application/sync/syncable_provider.dart';
+import 'package:mind_metric/src/data/auth/account_repository.dart';
 import 'package:mind_metric/src/data/auth/auth_repository.dart';
 import 'package:mind_metric/src/data/auth/auth_service.dart';
+import 'package:mind_metric/src/data/auth/login_repository.dart';
 import 'package:mind_metric/src/data/auth/user_repository.dart';
 import 'package:mind_metric/src/data/auth/user_service.dart';
 import 'package:mind_metric/src/data/core/config_repository.dart';
@@ -27,8 +31,6 @@ import 'package:mind_metric/src/utils/biometric_local_auth_utils.dart';
 import 'package:mind_metric/src/utils/file_downloader.dart';
 import 'package:mind_metric/src/utils/network_validator.dart';
 import 'package:mind_metric/src/utils/sync/job_util.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:local_auth/local_auth.dart';
 
 ConfigRepository provideConfigRepository() {
   return ConfigRepository.instance();
@@ -123,6 +125,14 @@ JobUtils provideJobUtils() {
     jobRepository: provideJobRepository(),
     jobManager: provideJobManager(),
   );
+}
+
+LoginRepository provideLoginRepository() {
+  return LoginRepository();
+}
+
+AccountRepository provideAccountRepository() {
+  return AccountRepository();
 }
 
 AuthRepository provideAuthRepository() {
