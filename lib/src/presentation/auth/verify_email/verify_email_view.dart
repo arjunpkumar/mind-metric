@@ -2,9 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mind_metric/src/application/bloc/account/account_bloc.dart';
 import 'package:mind_metric/src/application/bloc/auth/verify_email/verify_email_bloc.dart';
 import 'package:mind_metric/src/application/bloc/auth/verify_email/verify_email_event.dart';
 import 'package:mind_metric/src/application/bloc/auth/verify_email/verify_email_state.dart';
+import 'package:mind_metric/src/presentation/entry_eligibility/entry_eligibility_page.dart';
 
 const Color _kBg = Color(0xFF101438);
 const Color _kBoxBg = Color(0xFF151B40);
@@ -20,9 +22,11 @@ class VerifyEmailView extends StatelessWidget {
   const VerifyEmailView({
     super.key,
     required this.maskedEmail,
+    this.accountBloc,
   });
 
   final String maskedEmail;
+  final AccountBloc? accountBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +54,19 @@ class VerifyEmailView extends StatelessWidget {
           listenWhen: (p, c) => p.status != c.status,
           listener: (context, state) {
             if (state.status == VerifyEmailStatus.success) {
-              Navigator.of(context).pop(true);
+              final acc = accountBloc;
+              if (acc != null) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute<void>(
+                    builder: (_) => BlocProvider<AccountBloc>.value(
+                      value: acc,
+                      child: const EntryEligibilityPage(),
+                    ),
+                  ),
+                );
+              } else {
+                Navigator.of(context).pop(true);
+              }
             } else if (state.status == VerifyEmailStatus.failure &&
                 state.errorMessage != null &&
                 state.otpCode.length == 6) {

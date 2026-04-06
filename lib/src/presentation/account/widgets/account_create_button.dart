@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mind_metric/src/application/bloc/account/account_bloc.dart';
-import 'package:mind_metric/src/application/bloc/account/account_event.dart';
 import 'package:mind_metric/src/application/bloc/account/account_state.dart';
 import 'package:mind_metric/src/presentation/account/account_theme.dart';
 import 'package:mind_metric/src/presentation/auth/verify_email/verify_email_page.dart';
@@ -44,19 +43,16 @@ class AccountCreateButton extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: enabled
-                    ? () async {
+                    ? () {
                         final bloc = context.read<AccountBloc>();
                         final email = bloc.state.email.trim();
-                        final verified = await Navigator.of(context).pushNamed(
+                        Navigator.of(context).pushNamed(
                           VerifyEmailPage.route,
-                          arguments: email,
+                          arguments: VerifyEmailRouteArgs(
+                            email: email,
+                            accountBloc: bloc,
+                          ),
                         );
-                        if (!context.mounted) {
-                          return;
-                        }
-                        if (verified == true) {
-                          bloc.add(const SubmitAccountCreation());
-                        }
                       }
                     : null,
                 borderRadius: BorderRadius.circular(30),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mind_metric/src/application/bloc/account/account_bloc.dart';
 import 'package:mind_metric/src/application/bloc/home/home_bloc.dart';
 import 'package:mind_metric/src/application/bloc/web_view/web_view_bloc.dart';
 import 'package:mind_metric/src/application/core/bloc_provider.dart';
@@ -34,12 +35,21 @@ Route<dynamic>? generatedRoutes(RouteSettings settings) {
 
   switch (uri.path) {
     case VerifyEmailPage.route:
-      final email = settings.arguments is String
-          ? settings.arguments! as String
-          : '';
+      final args = settings.arguments;
+      String email = '';
+      AccountBloc? accountBloc;
+      if (args is VerifyEmailRouteArgs) {
+        email = args.email;
+        accountBloc = args.accountBloc;
+      } else if (args is String) {
+        email = args;
+      }
       return MaterialPageRoute<void>(
         settings: settings,
-        builder: (context) => VerifyEmailPage(email: email),
+        builder: (context) => VerifyEmailPage(
+          email: email,
+          accountBloc: accountBloc,
+        ),
       );
     case WebViewPage.route:
       if (settings.arguments != null && settings.arguments is WebViewArgument) {

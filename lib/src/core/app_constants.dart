@@ -11,6 +11,10 @@ const iosAppStoreUrl =
 
 const int maxFailuresCount = 3;
 
+/// When `true`, verify-email OTP screen skips all REST calls (no backend required).
+/// Set to `false` when the verify-email API is ready.
+const bool kBypassVerifyEmailNetwork = true;
+
 const whiteListDocumentExtensions = [
   '.pdf',
   '.doc',
