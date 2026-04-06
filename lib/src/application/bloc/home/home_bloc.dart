@@ -19,7 +19,9 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState, HomeUIEvent> {
   void _onInit(
     HomeInit event,
     Emitter<HomeState> emit,
-  ) {}
+  ) {
+    emit(state.copyWith()..isInitCompleted = true);
+  }
 
   @override
   HomeUIEvent get getEvent => HomeUIEvent();

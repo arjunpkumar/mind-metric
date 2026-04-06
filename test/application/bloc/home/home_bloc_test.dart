@@ -18,16 +18,33 @@ void main() {
     });
 
     blocTest<HomeBloc, HomeState>(
-      'emits [] when nothing is added',
+      'emits completed init after HomeInit from constructor',
       build: () => HomeBloc(),
-      expect: () => [],
+      expect: () => [
+        isA<HomeState>().having(
+          (s) => s.isInitCompleted,
+          'isInitCompleted',
+          true,
+        ),
+      ],
     );
 
     blocTest<HomeBloc, HomeState>(
-      'emits [HomeState] when HomeInit is added',
+      'emits again when HomeInit is added a second time',
       build: () => HomeBloc(),
       act: (bloc) => bloc.add(HomeInit()),
-      expect: () => [isA<HomeState>()],
+      expect: () => [
+        isA<HomeState>().having(
+          (s) => s.isInitCompleted,
+          'isInitCompleted',
+          true,
+        ),
+        isA<HomeState>().having(
+          (s) => s.isInitCompleted,
+          'isInitCompleted',
+          true,
+        ),
+      ],
     );
   });
 }

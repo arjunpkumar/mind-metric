@@ -22,7 +22,7 @@ final Map<String, Widget Function(BuildContext context)> routes = {
   AccountPage.route: (_) => const AccountPage(),
   HomePage.route: (_) => BlocProvider(
         create: (_) => HomeBloc(),
-        child: HomePage(),
+        child: const HomePage(),
       ),
 };
 
