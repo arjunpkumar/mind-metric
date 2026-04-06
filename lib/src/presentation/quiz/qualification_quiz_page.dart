@@ -3,13 +3,24 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mind_metric/src/presentation/account/account_theme.dart';
+import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 import 'package:mind_metric/src/presentation/quiz/qualification_quiz_models.dart';
+import 'package:mind_metric/src/presentation/quiz/quiz_success_page.dart';
+import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
+
+/// Matches [LandingPage] gradient for brand consistency.
+const Color _kLandingBgTop = Color(0xFF0D1230);
+const Color _kLandingBgMid = Color(0xFF101438);
+const Color _kLandingBgBottom = Color(0xFF151B4A);
+const Color _kLandingMuted = Color(0xFFA9AEC1);
 
 const Color _kQuizBg = Color(0xFF0A0E21);
 const Color _kPurple = Color(0xFF6A5ACD);
+
 /// Timer bar fill while plenty of time remains (>10s).
 const Color _kTimerBarGreen = Color(0xFF43A047);
 const int _kSecondsPerQuestion = 30;
+
 /// At or below this many seconds left, timer bar uses [AccountThemeColors.accent].
 const int _kTimerBarAccentThresholdSeconds = 10;
 
@@ -31,7 +42,8 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
   Timer? _timer;
   bool _timedOut = false;
 
-  QualificationQuestion get _question => kQualificationQuestions[_questionIndex];
+  QualificationQuestion get _question =>
+      kQualificationQuestions[_questionIndex];
 
   int get _totalQuestions => kQualificationQuestions.length;
 
@@ -78,21 +90,25 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
     if (_timedOut || _selectedOptionIndex == null) return;
 
     final ok = _selectedOptionIndex == _question.correctOptionIndex;
-    if (ok) {
-      _correctCount++;
+    if (!ok) {
+      _timer?.cancel();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (context) => const QuizIncorrectAnswerPage(),
+        ),
+      );
+      return;
     }
+
+    _correctCount++;
 
     if (_questionIndex >= _totalQuestions - 1) {
       _timer?.cancel();
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
-          builder: (context) => QualificationQuizResultPage(
-            correctAnswers: _correctCount,
-            totalQuestions: _totalQuestions,
-            timedOut: false,
-            answeredAll: true,
-          ),
+          builder: (context) => const QuizSuccessPage(),
         ),
       );
       return;
@@ -395,7 +411,8 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
                         Icon(
                           Icons.shield_outlined,
                           size: 14,
-                          color: AccountThemeColors.muted.withValues(alpha: 0.7),
+                          color:
+                              AccountThemeColors.muted.withValues(alpha: 0.7),
                         ),
                         const SizedBox(width: 6),
                         Flexible(
@@ -414,7 +431,7 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Demo: wrong answers still advance; result shows your score.',
+                      'Next Question checks your answer; wrong ends the attempt.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AccountThemeColors.muted.withValues(alpha: 0.5),
@@ -543,6 +560,12 @@ class QualificationQuizResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (timedOut) {
+      return QuizTimeExpiredPage(
+        onReturnToCompetitionHome: () => Navigator.of(context).pop(),
+      );
+    }
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: Colors.transparent,
@@ -550,80 +573,349 @@ class QualificationQuizResultPage extends StatelessWidget {
         statusBarBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: _kQuizBg,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 32),
-                Icon(
-                  _passed ? Icons.emoji_events_outlined : Icons.timer_off_outlined,
-                  size: 64,
-                  color: _passed ? AccountThemeColors.accent : Colors.redAccent,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  timedOut
-                      ? "Time's up"
-                      : _passed
-                          ? 'Qualification passed'
-                          : 'Quiz complete',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
+        backgroundColor: Colors.transparent,
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                _kLandingBgTop,
+                _kLandingBgMid,
+                _kLandingBgBottom,
+              ],
+              stops: [0.0, 0.45, 1.0],
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 32),
+                  Icon(
+                    _passed
+                        ? Icons.emoji_events_outlined
+                        : Icons.fact_check_outlined,
+                    size: 64,
+                    color: _passed ? AccountThemeColors.accent : _kLandingMuted,
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  timedOut
-                      ? 'The timer reached zero before you continued. '
-                          '100% pass within the time limit is required.'
-                      : 'You answered $correctAnswers of $totalQuestions '
-                          'correctly. ${_passed ? 'You may proceed when the next step is available.' : '100% correct answers are required to pass.'}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AccountThemeColors.muted.withValues(alpha: 0.95),
-                    fontSize: 15,
-                    height: 1.45,
-                  ),
-                ),
-                const Spacer(),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    gradient: const LinearGradient(
-                      colors: [
-                        AccountThemeColors.gradientStart,
-                        AccountThemeColors.accent,
-                      ],
+                  const SizedBox(height: 24),
+                  Text(
+                    _passed ? 'Qualification passed' : 'Quiz complete',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => Navigator.of(context).pop(),
-                      borderRadius: BorderRadius.circular(30),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Center(
-                          child: Text(
-                            'Back to home',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'You answered $correctAnswers of $totalQuestions '
+                    'correctly. ${_passed ? 'You may proceed when the next step is available.' : '100% correct answers are required to pass.'}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: _kLandingMuted.withValues(alpha: 0.95),
+                      fontSize: 15,
+                      height: 1.45,
+                    ),
+                  ),
+                  const Spacer(),
+                  _LandingStyleCtaButton(
+                    label: 'BACK TO HOME',
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Wrong answer ends the qualification attempt (matches competition UI spec).
+class QuizIncorrectAnswerPage extends StatelessWidget {
+  const QuizIncorrectAnswerPage({super.key});
+
+  static const Color _coralTitle = Color(0xFFFF8A8A);
+  static const Color lavenderBody = Color(0xFFB8B8D4);
+  static const Color _redCircle = Color(0xFFD32F2F);
+  static const Color _infoBoxBorder = Color(0xFF4A5BA8);
+  static const Color _logOutBorder = Color(0xFFAB47BC);
+
+  @override
+  Widget build(BuildContext context) {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                _kLandingBgTop,
+                _kLandingBgMid,
+                _kLandingBgBottom,
+              ],
+              stops: [0.0, 0.45, 1.0],
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 24),
+                  Center(
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: _redCircle,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _redCircle.withValues(alpha: 0.55),
+                            blurRadius: 28,
+                            spreadRadius: 2,
                           ),
-                        ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 56,
                       ),
                     ),
                   ),
+                  const SizedBox(height: 28),
+                  const Text(
+                    'Incorrect Answer',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: _coralTitle,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      height: 1.15,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Unfortunately, your last answer was incorrect.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: lavenderBody.withValues(alpha: 0.95),
+                      fontSize: 15,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'A perfect score is required to proceed.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      height: 1.4,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A2049),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: _infoBoxBorder.withValues(alpha: 0.65),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'What happens next:',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        _IncorrectBullet(
+                          text: 'Your current attempt has ended',
+                        ),
+                        const SizedBox(height: 10),
+                        _IncorrectBullet(
+                          text: 'You may purchase another entry to try again',
+                        ),
+                        const SizedBox(height: 10),
+                        _IncorrectBullet(
+                          text: 'Maximum 10 entries per competition',
+                        ),
+                        const SizedBox(height: 10),
+                        _IncorrectBullet(
+                          text:
+                              'Log out and log back in to make payment for another attempt',
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  _LandingStyleCtaButton(
+                    label: 'Return to Competition Home',
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(height: 14),
+                  OutlinedButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        LoginPage.route,
+                        (route) => false,
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _coralTitle,
+                      side: const BorderSide(
+                        color: _logOutBorder,
+                        width: 1.5,
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                    ),
+                    child: const Text(
+                      'Log Out',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Pure skill. One prize. One winner.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: _kLandingMuted.withValues(alpha: 0.65),
+                      fontSize: 12,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _IncorrectBullet extends StatelessWidget {
+  const _IncorrectBullet({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: AccountThemeColors.accent,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color:
+                  QuizIncorrectAnswerPage.lavenderBody.withValues(alpha: 0.95),
+              fontSize: 14,
+              height: 1.45,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LandingStyleCtaButton extends StatelessWidget {
+  const _LandingStyleCtaButton({
+    required this.label,
+    required this.onTap,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: const LinearGradient(
+          colors: [
+            AccountThemeColors.gradientStart,
+            AccountThemeColors.accent,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AccountThemeColors.accent.withValues(alpha: 0.45),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(28),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.4,
                 ),
-              ],
+              ),
             ),
           ),
         ),

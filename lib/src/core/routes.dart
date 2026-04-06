@@ -9,7 +9,10 @@ import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 import 'package:mind_metric/src/presentation/auth/verify_email/verify_email_page.dart';
 import 'package:mind_metric/src/presentation/home/home_page.dart';
 import 'package:mind_metric/src/presentation/landing/landing_page.dart';
+import 'package:mind_metric/src/presentation/quiz/creative_submission_page.dart';
 import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
+import 'package:mind_metric/src/presentation/quiz/quiz_success_page.dart';
+import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
 import 'package:mind_metric/src/presentation/splash/splash_page.dart';
 import 'package:mind_metric/src/presentation/web_view/web_view_page.dart';
 
@@ -26,6 +29,11 @@ final Map<String, Widget Function(BuildContext context)> routes = {
         child: const HomePage(),
       ),
   QualificationQuizPage.route: (_) => const QualificationQuizPage(),
+  QuizSuccessPage.route: (_) => const QuizSuccessPage(),
+  CreativeSubmissionPage.route: (_) => const CreativeSubmissionPage(),
+  QuizTimeExpiredPage.route: (context) => QuizTimeExpiredPage(
+        onReturnToCompetitionHome: () => Navigator.of(context).pop(),
+      ),
 };
 
 Route<dynamic>? generatedRoutes(RouteSettings settings) {
