@@ -15,6 +15,10 @@ const int maxFailuresCount = 3;
 /// Set to `false` when the verify-email API is ready.
 const bool kBypassVerifyEmailNetwork = true;
 
+/// When `true`, [AccountRepository.createAccount] succeeds without a real API
+/// (the mock no longer fails at random). Set to `false` when the signup API is wired.
+const bool kBypassAccountCreationNetwork = true;
+
 const whiteListDocumentExtensions = [
   '.pdf',
   '.doc',

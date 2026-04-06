@@ -8,6 +8,7 @@ import 'package:mind_metric/src/application/bloc/home/home_state.dart';
 import 'package:mind_metric/src/presentation/account/account_theme.dart';
 import 'package:mind_metric/src/presentation/core/app_page.dart';
 import 'package:mind_metric/src/presentation/core/base_state.dart';
+import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
 
 const String _kLogoUrl =
     'https://lucidengine.ai/wp-content/uploads/2024/02/le-powered-logo.png';
@@ -291,11 +292,8 @@ class _PaymentSuccessHomeBody extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Quiz flow coming soon.'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
+                    Navigator.of(context).pushNamed(
+                      QualificationQuizPage.route,
                     );
                   },
                   borderRadius: BorderRadius.circular(30),

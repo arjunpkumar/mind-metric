@@ -9,6 +9,7 @@ import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 import 'package:mind_metric/src/presentation/auth/verify_email/verify_email_page.dart';
 import 'package:mind_metric/src/presentation/home/home_page.dart';
 import 'package:mind_metric/src/presentation/landing/landing_page.dart';
+import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
 import 'package:mind_metric/src/presentation/splash/splash_page.dart';
 import 'package:mind_metric/src/presentation/web_view/web_view_page.dart';
 
@@ -24,6 +25,7 @@ final Map<String, Widget Function(BuildContext context)> routes = {
         create: (_) => HomeBloc(),
         child: const HomePage(),
       ),
+  QualificationQuizPage.route: (_) => const QualificationQuizPage(),
 };
 
 Route<dynamic>? generatedRoutes(RouteSettings settings) {
