@@ -421,61 +421,96 @@ class _EligibilityCheckCard extends StatelessWidget {
   final String text;
   final ValueChanged<bool?> onChanged;
 
+  static const double _toggleSize = 24;
+  static const double _toggleRadius = 6;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: AccountThemeColors.inputBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onChanged(!value),
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: AccountThemeColors.inputBackground,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: value
+                  ? AccountThemeColors.accent
+                  : Colors.white.withValues(alpha: 0.1),
+              width: value ? 1.5 : 1,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _EligibilityToggleBox(
+                  selected: value,
+                  size: _toggleSize,
+                  borderRadius: _toggleRadius,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      text,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 28,
-            height: 28,
-            child: CheckboxTheme(
-              data: CheckboxThemeData(
-                fillColor: WidgetStateProperty.resolveWith((states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return AccountThemeColors.accent;
-                  }
-                  return Colors.transparent;
-                }),
-                checkColor: WidgetStateProperty.all(Colors.white),
-                side: const BorderSide(
-                  color: AccountThemeColors.accent,
-                  width: 1.5,
-                ),
-              ),
-              child: Checkbox(
-                value: value,
-                onChanged: onChanged,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  height: 1.35,
-                ),
-              ),
-            ),
-          ),
-        ],
+    );
+  }
+}
+
+/// Rounded square: orange fill + white check when selected; orange stroke only when not.
+class _EligibilityToggleBox extends StatelessWidget {
+  const _EligibilityToggleBox({
+    required this.selected,
+    required this.size,
+    required this.borderRadius,
+  });
+
+  final bool selected;
+  final double size;
+  final double borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      curve: Curves.easeOut,
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: selected ? AccountThemeColors.accent : Colors.transparent,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: AccountThemeColors.accent,
+          width: 1.5,
+        ),
       ),
+      child: selected
+          ? const Center(
+              child: Icon(
+                Icons.check_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            )
+          : null,
     );
   }
 }
