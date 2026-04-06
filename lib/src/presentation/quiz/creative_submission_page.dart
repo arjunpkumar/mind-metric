@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mind_metric/src/presentation/quiz/entry_submitted_page.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
 
 const Color _kBgTop = Color(0xFF06082A);
@@ -99,10 +101,18 @@ class _CreativeSubmissionPageState extends State<CreativeSubmissionPage> {
 
   void _submit() {
     if (!_canSubmit) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Entry submitted. Thank you!'),
-        behavior: SnackBarBehavior.floating,
+    _timer?.cancel();
+    final ref =
+        'TBSC-${DateTime.now().year}-${Random().nextInt(1000000).toString().padLeft(6, '0')}';
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        settings: const RouteSettings(name: EntrySubmittedPage.route),
+        builder: (context) => EntrySubmittedPage(
+          wordCount: _wordCount,
+          // ignore: avoid_redundant_argument_values — keep in sync if _kRequiredWords changes
+          wordTarget: _kRequiredWords,
+          entryReference: ref,
+        ),
       ),
     );
   }

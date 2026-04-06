@@ -158,7 +158,7 @@ class _LandingPageState extends State<LandingPage> {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Color(0x55FF9E0F),
+                color: Color(0x55FF9E0F), 
                 blurRadius: 20,
               ),
             ],

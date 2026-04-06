@@ -7,9 +7,11 @@ import 'package:mind_metric/src/application/core/bloc_provider.dart';
 import 'package:mind_metric/src/presentation/account/account_page.dart';
 import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 import 'package:mind_metric/src/presentation/auth/verify_email/verify_email_page.dart';
+import 'package:mind_metric/src/presentation/dashboard/dashboard_page.dart';
 import 'package:mind_metric/src/presentation/home/home_page.dart';
 import 'package:mind_metric/src/presentation/landing/landing_page.dart';
 import 'package:mind_metric/src/presentation/quiz/creative_submission_page.dart';
+import 'package:mind_metric/src/presentation/quiz/entry_submitted_page.dart';
 import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_success_page.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
@@ -31,6 +33,7 @@ final Map<String, Widget Function(BuildContext context)> routes = {
   QualificationQuizPage.route: (_) => const QualificationQuizPage(),
   QuizSuccessPage.route: (_) => const QuizSuccessPage(),
   CreativeSubmissionPage.route: (_) => const CreativeSubmissionPage(),
+  EntrySubmittedPage.route: (_) => const EntrySubmittedPage(),
   QuizTimeExpiredPage.route: (context) => QuizTimeExpiredPage(
         onReturnToCompetitionHome: () => Navigator.of(context).pop(),
       ),
@@ -68,6 +71,19 @@ Route<dynamic>? generatedRoutes(RouteSettings settings) {
           settings.arguments! as WebViewArgument,
         );
       }
+      return null;
+    case DashboardPage.route:
+      final args = settings.arguments;
+      final a = args is DashboardRouteArgs
+          ? args
+          : const DashboardRouteArgs();
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => DashboardPage(
+          userName: a.userName,
+          shortlistedEntryRef: a.shortlistedEntryRef,
+        ),
+      );
   }
   return null;
 }
