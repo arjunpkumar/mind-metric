@@ -6,6 +6,7 @@ import 'package:mind_metric/src/application/core/bloc_provider.dart';
 import 'package:mind_metric/src/presentation/account/account_page.dart';
 import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 import 'package:mind_metric/src/presentation/home/home_page.dart';
+import 'package:mind_metric/src/presentation/landing/landing_page.dart';
 import 'package:mind_metric/src/presentation/splash/splash_page.dart';
 import 'package:mind_metric/src/presentation/web_view/web_view_page.dart';
 
@@ -15,6 +16,7 @@ final Map<String, Widget Function(BuildContext context)> routes = {
         child: const SplashPage(),
       ),
   LoginPage.route: (_) => const LoginPage(),
+  LandingPage.route: (_) => const LandingPage(),
   AccountPage.route: (_) => const AccountPage(),
   HomePage.route: (_) => BlocProvider(
         create: (_) => HomeBloc(),

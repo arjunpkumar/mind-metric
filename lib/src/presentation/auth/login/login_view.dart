@@ -33,7 +33,10 @@ class LoginView extends StatelessWidget {
           listenWhen: (prev, curr) => prev.status != curr.status,
           listener: (context, state) {
             if (state.status == LoginFormStatus.submissionSuccess) {
-              Navigator.of(context).pushReplacementNamed(HomePage.route);
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                HomePage.route,
+                (route) => false,
+              );
             } else if (state.status == LoginFormStatus.submissionFailure) {
               final msg =
                   state.submissionErrorMessage ?? 'Invalid credentials';

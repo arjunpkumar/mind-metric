@@ -15,8 +15,7 @@ import 'package:mind_metric/src/data/database/auth_settings_dao.dart';
 import 'package:mind_metric/src/data/database/auth_token_dao.dart';
 import 'package:mind_metric/src/data/database/core/app_database.dart';
 import 'package:mind_metric/src/data/database/settings_dao.dart';
-import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
-import 'package:mind_metric/src/presentation/home/home_page.dart';
+import 'package:mind_metric/src/presentation/landing/landing_page.dart';
 import 'package:mind_metric/src/presentation/widgets/loader_widget.dart';
 import 'package:mind_metric/src/utils/auth/auth_util.dart';
 import 'package:mind_metric/src/utils/extensions.dart';
@@ -257,8 +256,8 @@ class AuthRepository {
     await signOut();
     Navigator.of(navigatorKey.currentContext!, rootNavigator: true).pop();
     await navigatorKey.currentState!.pushNamedAndRemoveUntil(
-      LoginPage.route,
-      ModalRoute.withName(HomePage.route),
+      LandingPage.route,
+      (route) => false,
     );
   }
 

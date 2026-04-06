@@ -6,10 +6,11 @@ import 'package:mind_metric/src/application/bloc/splash/splash_bloc.dart';
 import 'package:mind_metric/src/application/bloc/splash/splash_event.dart';
 import 'package:mind_metric/src/application/bloc/splash/splash_state.dart';
 import 'package:mind_metric/src/core/app_constants.dart';
-import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 import 'package:mind_metric/src/presentation/core/base_state.dart';
 import 'package:mind_metric/src/presentation/core/theme/colors.dart';
 import 'package:mind_metric/src/presentation/core/theme/text_styles.dart';
+import 'package:mind_metric/src/presentation/home/home_page.dart';
+import 'package:mind_metric/src/presentation/landing/landing_page.dart';
 
 class SplashPage extends StatefulWidget {
   static String route = '/';
@@ -36,8 +37,12 @@ class _SplashState extends BaseState<SplashPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<SplashBloc, SplashState>(
       listener: (context, state) {
+        if (state.redirectToOtp ?? false) {
+          Navigator.pushReplacementNamed(context, HomePage.route);
+          return;
+        }
         if (state.redirectToLogin ?? false) {
-          Navigator.pushReplacementNamed(context, LoginPage.route);
+          Navigator.pushReplacementNamed(context, LandingPage.route);
         }
       },
       builder: (context, state) {
