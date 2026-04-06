@@ -1,0 +1,93 @@
+import 'package:dio/dio.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
+import 'package:mind_metric/src/utils/extensions.dart';
+
+/// Calls backend endpoints to send and confirm email verification codes.
+///
+/// Expected responses: HTTP 2xx. If the body is a JSON map with
+/// `success: false`, `responseCode != 200`, or `message`, this class throws
+/// [Exception] with a parsed message.
+class VerifyEmailService {
+  VerifyEmailService({Dio? dio}) : _dio = dio ?? NetworkClient.dioInstance;
+
+  final Dio _dio;
+
+  Future<void> sendVerificationCode({required String email}) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        APIEndpoints.sendEmailVerificationUrl,
+        data: <String, dynamic>{'email': email},
+      );
+      _ensureSuccess(response);
+    } on DioException catch (e) {
+      throw Exception(_dioErrorMessage(e));
+    }
+  }
+
+  Future<void> verifyCode({
+    required String email,
+    required String code,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        APIEndpoints.verifyEmailCodeUrl,
+        data: <String, dynamic>{
+          'email': email,
+          'code': code,
+        },
+      );
+      _ensureSuccess(response);
+    } on DioException catch (e) {
+      throw Exception(_dioErrorMessage(e));
+    }
+  }
+
+  void _ensureSuccess(Response<dynamic> response) {
+    final code = response.statusCode;
+    if (code == null || code < 200 || code >= 300) {
+      throw Exception('Unexpected status $code');
+    }
+    final data = response.data;
+    if (data == null) {
+      return;
+    }
+    if (data is! Map) {
+      return;
+    }
+    final map = toGenericMap(data);
+    final success = map['success'];
+    if (success == false) {
+      throw Exception(
+        map['message']?.toString() ?? 'Request was not successful',
+      );
+    }
+    final rc = map['responseCode'] ?? map['statusCode'];
+    if (rc != null && rc != 200) {
+      throw Exception(
+        map['message']?.toString() ?? 'Request failed',
+      );
+    }
+  }
+
+  String _dioErrorMessage(DioException e) {
+    final data = e.response?.data;
+    if (data is Map) {
+      final m = toGenericMap(data);
+      final msg = m['message'] ?? m['error'] ?? m['detail'] ?? m['title'];
+      if (msg != null) {
+        return msg.toString();
+      }
+      final errors = m['errors'];
+      if (errors is Map && errors.isNotEmpty) {
+        final first = errors.values.first;
+        if (first is List && first.isNotEmpty) {
+          return first.first.toString();
+        }
+      }
+    }
+    if (e.message != null && e.message!.isNotEmpty) {
+      return e.message!;
+    }
+    return 'Network error';
+  }
+}

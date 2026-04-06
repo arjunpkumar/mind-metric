@@ -5,6 +5,7 @@ import 'package:mind_metric/src/application/bloc/web_view/web_view_bloc.dart';
 import 'package:mind_metric/src/application/core/bloc_provider.dart';
 import 'package:mind_metric/src/presentation/account/account_page.dart';
 import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
+import 'package:mind_metric/src/presentation/auth/verify_email/verify_email_page.dart';
 import 'package:mind_metric/src/presentation/home/home_page.dart';
 import 'package:mind_metric/src/presentation/landing/landing_page.dart';
 import 'package:mind_metric/src/presentation/splash/splash_page.dart';
@@ -32,6 +33,14 @@ Route<dynamic>? generatedRoutes(RouteSettings settings) {
   debugPrint("Arguments :  ${settings.arguments ?? "null"}");
 
   switch (uri.path) {
+    case VerifyEmailPage.route:
+      final email = settings.arguments is String
+          ? settings.arguments! as String
+          : '';
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (context) => VerifyEmailPage(email: email),
+      );
     case WebViewPage.route:
       if (settings.arguments != null && settings.arguments is WebViewArgument) {
         return _getWebViewRoute(

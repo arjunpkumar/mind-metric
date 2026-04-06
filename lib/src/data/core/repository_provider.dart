@@ -14,6 +14,8 @@ import 'package:mind_metric/src/data/auth/auth_service.dart';
 import 'package:mind_metric/src/data/auth/login_repository.dart';
 import 'package:mind_metric/src/data/auth/user_repository.dart';
 import 'package:mind_metric/src/data/auth/user_service.dart';
+import 'package:mind_metric/src/data/auth/verify_email_repository.dart';
+import 'package:mind_metric/src/data/auth/verify_email_service.dart';
 import 'package:mind_metric/src/data/core/config_repository.dart';
 import 'package:mind_metric/src/data/core/log_services.dart';
 import 'package:mind_metric/src/data/core/proxy/proxy_service.dart';
@@ -133,6 +135,16 @@ LoginRepository provideLoginRepository() {
 
 AccountRepository provideAccountRepository() {
   return AccountRepository();
+}
+
+VerifyEmailService provideVerifyEmailService() {
+  return VerifyEmailService();
+}
+
+VerifyEmailRepository provideVerifyEmailRepository() {
+  return VerifyEmailRepository(
+    service: provideVerifyEmailService(),
+  );
 }
 
 AuthRepository provideAuthRepository() {

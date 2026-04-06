@@ -249,6 +249,21 @@ class APIEndpoints {
   static String get changePasswordUrl => '$_authBaseUrl/Manage/ChangePassword';
 
   static String get userinfo => '$_authBaseUrl/userinfo';
+
+  /// App REST API root (trailing slash ensured).
+  static String get _restRoot {
+    final b = Config.appFlavor.restBaseUrl;
+    return b.endsWith('/') ? b : '$b/';
+  }
+
+  /// POST JSON: `{ "email": "<address>" }` — sends a verification code to the inbox.
+  /// Adjust the path segment if your backend uses a different route.
+  static String get sendEmailVerificationUrl =>
+      '${_restRoot}auth/email/send-verification-code';
+
+  /// POST JSON: `{ "email": "<address>", "code": "<6-digit>" }` — confirms the code.
+  static String get verifyEmailCodeUrl =>
+      '${_restRoot}auth/email/verify-code';
 }
 
 class NetworkClient {

@@ -13,6 +13,7 @@ class AccountLabeledField extends StatelessWidget {
     this.obscureText = false,
     this.textInputAction = TextInputAction.next,
     this.onSubmitted,
+    this.focusNode,
   });
 
   final String label;
@@ -24,6 +25,7 @@ class AccountLabeledField extends StatelessWidget {
   final bool obscureText;
   final TextInputAction textInputAction;
   final VoidCallback? onSubmitted;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +42,7 @@ class AccountLabeledField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
+          focusNode: focusNode,
           controller: controller,
           keyboardType: keyboardType,
           obscureText: obscureText,
