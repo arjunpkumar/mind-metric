@@ -27,7 +27,9 @@ class _LandingPageState extends State<LandingPage> {
   static const Color _comingSoonPurple = Color(0xFF6B4FD8);
   static const String _logoUrl =
       'https://lucidengine.ai/wp-content/uploads/2024/02/le-powered-logo.png';
-  static const String _cardAsset = 'assets/images/landing_competition_card.png';
+  /// Hero card image (replace with a bundled asset under `assets/images/` if preferred).
+  static const String _cardImageUrl =
+      'https://images.unsplash.com/photo-1540947706867-f6ca12943e84?w=1200&q=80';
 
   @override
   void dispose() {
@@ -215,10 +217,23 @@ class _LandingPageState extends State<LandingPage> {
             return Stack(
               fit: StackFit.expand,
               children: [
-                Image.asset(
-                  _cardAsset,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                Positioned.fill(
+                  child: CachedNetworkImage(
+                    imageUrl: _cardImageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(
+                    color: const Color(0xFF1A2049),
+                    alignment: Alignment.center,
+                    child: const SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _accent,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (_, __, ___) => Container(
                     color: const Color(0xFF1A2049),
                     alignment: Alignment.center,
                     child: const Icon(
@@ -226,6 +241,7 @@ class _LandingPageState extends State<LandingPage> {
                       color: _muted,
                       size: 64,
                     ),
+                  ),
                   ),
                 ),
                 Positioned(

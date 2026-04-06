@@ -4,7 +4,6 @@ import 'package:mind_metric/src/application/bloc/account/account_bloc.dart';
 import 'package:mind_metric/src/application/bloc/account/account_event.dart';
 import 'package:mind_metric/src/application/bloc/account/account_state.dart';
 import 'package:mind_metric/src/presentation/account/widgets/account_labeled_field.dart';
-import 'package:mind_metric/src/presentation/auth/verify_email/verify_email_page.dart';
 
 /// Owns [TextEditingController]s; syncs when bloc clears email/password; dispatches change events.
 class AccountSyncedTextFields extends StatefulWidget {
@@ -16,10 +15,6 @@ class AccountSyncedTextFields extends StatefulWidget {
 }
 
 class _AccountSyncedTextFieldsState extends State<AccountSyncedTextFields> {
-  static final RegExp _emailRegex = RegExp(
-    r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-  );
-
   late final TextEditingController _email;
   late final TextEditingController _password;
   late final FocusNode _passwordFocus;
@@ -41,22 +36,10 @@ class _AccountSyncedTextFieldsState extends State<AccountSyncedTextFields> {
     super.dispose();
   }
 
-  Future<void> _onEmailFieldSubmitted(BuildContext context) async {
+  void _onEmailFieldSubmitted(BuildContext context) {
     final trimmed = _email.text.trim();
     context.read<AccountBloc>().add(AccountEmailChanged(trimmed));
-    if (!_emailRegex.hasMatch(trimmed)) {
-      return;
-    }
-    final verified = await Navigator.of(context).pushNamed(
-      VerifyEmailPage.route,
-      arguments: trimmed,
-    );
-    if (!context.mounted) {
-      return;
-    }
-    if (verified == true) {
-      _passwordFocus.requestFocus();
-    }
+    FocusScope.of(context).requestFocus(_passwordFocus);
   }
 
   void _syncFromStateIfNeeded(AccountState state) {
@@ -108,9 +91,8 @@ class _AccountSyncedTextFieldsState extends State<AccountSyncedTextFields> {
                 errorText: state.passwordError,
                 onChanged: (v) =>
                     context.read<AccountBloc>().add(AccountPasswordChanged(v)),
-                onSubmitted: () => context
-                    .read<AccountBloc>()
-                    .add(const SubmitAccountCreation()),
+                onSubmitted: () =>
+                    FocusManager.instance.primaryFocus?.unfocus(),
               ),
             ],
           );
