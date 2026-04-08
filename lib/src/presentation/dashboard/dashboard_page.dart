@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mind_metric/src/presentation/account/account_page.dart';
 import 'package:mind_metric/src/presentation/home/home_page.dart';
+import 'package:mind_metric/src/presentation/payment/payment_page.dart';
 import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
 
 const Color _kBg = Color(0xFF0B0B2E);
@@ -113,7 +114,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     remaining: _remaining,
                   ),
                   const _MyEntriesTab(),
-                  const _AccountStubTab(),
+                  const _AccountTab(),
                 ],
               ),
             ),
@@ -305,7 +306,7 @@ class _DashboardHomeTab extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
-                    Navigator.of(context).pushNamed(HomePage.route);
+                    Navigator.of(context).pushNamed(PaymentPage.route);
                   },
                   borderRadius: BorderRadius.circular(28),
                   child: const Padding(
@@ -604,87 +605,508 @@ class _MyEntriesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       bottom: false,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Icon(
-                Icons.emoji_events_outlined,
-                size: 48,
-                color: _kMuted.withValues(alpha: 0.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'My Entries',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.95),
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'My Entries',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Track your success',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Your submitted entries will appear here.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _kMuted.withValues(alpha: 0.85),
-                  fontSize: 14,
-                  height: 1.4,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                child: Text.rich(
+                  TextSpan(
+                    text: '4 ',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: '/ 10',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 24),
+          _EntryRow(
+            status: '⭐ Shortlisted',
+            date: '14 Mar 2026',
+            refNumber: 'TBSC-2026-004521',
+            subtitle: '25 words submitted · Top 0.01%',
+            statusColor: _kOrange,
+            statusBgColor: _kOrange.withValues(alpha: 0.15),
+            isShortlisted: true,
+          ),
+          _EntryRow(
+            status: '✓ Submitted',
+            date: '12 Mar 2026',
+            refNumber: 'TBSC-2026-004486',
+            subtitle: '25 words submitted',
+            statusColor: Colors.greenAccent,
+            statusBgColor: Colors.greenAccent.withValues(alpha: 0.1),
+          ),
+          Opacity(
+            opacity: 0.75,
+            child: _EntryRow(
+              status: '✗ Quiz Failed',
+              date: '10 Mar 2026',
+              refNumber: 'TBSC-2026-004412',
+              subtitle: 'Did not pass verification',
+              statusColor: Colors.redAccent,
+              statusBgColor: Colors.redAccent.withValues(alpha: 0.1),
+            ),
+          ),
+          _EntryRow(
+            status: '✓ Submitted',
+            date: '9 Mar 2026',
+            refNumber: 'TBSC-2026-004390',
+            subtitle: '25 words submitted',
+            statusColor: Colors.greenAccent,
+            statusBgColor: Colors.greenAccent.withValues(alpha: 0.1),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EntryRow extends StatelessWidget {
+  const _EntryRow({
+    required this.status,
+    required this.date,
+    required this.refNumber,
+    required this.subtitle,
+    required this.statusColor,
+    required this.statusBgColor,
+    this.isShortlisted = false,
+  });
+
+  final String status;
+  final String date;
+  final String refNumber;
+  final String subtitle;
+  final Color statusColor;
+  final Color statusBgColor;
+  final bool isShortlisted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isShortlisted ? _kOrange.withValues(alpha: 0.05) : _kCardBg.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isShortlisted
+              ? _kOrange.withValues(alpha: 0.3)
+              : Colors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusBgColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  status.toUpperCase(),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              Text(
+                date,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text.rich(
+            TextSpan(
+              text: '# ',
+              style: TextStyle(
+                color: isShortlisted ? _kOrange.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.3),
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+              children: [
+                TextSpan(
+                  text: refNumber,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AccountTab extends StatelessWidget {
+  const _AccountTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        children: [
+          Container(
+            padding: const EdgeInsets.only(bottom: 24),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+            ),
+            child: Column(
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _kOrange.withValues(alpha: 0.2),
+                            blurRadius: 20,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Colors.deepPurpleAccent, _kOrange, _kOrangeDeep],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                         'JD',
+                         style: TextStyle(
+                           color: Colors.white,
+                           fontSize: 26,
+                           fontWeight: FontWeight.w900,
+                         ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Jordan Davies',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: Colors.greenAccent,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.greenAccent.withValues(alpha: 0.5),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Member since March 2026',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          const _SectionTitle(title: 'Account Details'),
+          _ActionRowGroup(
+            children: [
+              _ActionRow(
+                icon: Icons.email_outlined,
+                iconColor: Colors.white,
+                title: 'Email Address',
+                subtitle: 'jordan@example.com',
+                onTap: () {},
+              ),
+              _ActionRow(
+                icon: Icons.location_on_outlined,
+                iconColor: Colors.white,
+                title: 'Location',
+                subtitle: 'United Kingdom',
+                showDivider: false,
+                onTap: () {},
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const _SectionTitle(title: 'Settings'),
+          _ActionRowGroup(
+            children: [
+              _ActionRow(
+                icon: Icons.settings_outlined,
+                iconColor: _kOrange,
+                title: 'Edit Profile',
+                showChevron: true,
+                onTap: () {},
+              ),
+              _ActionRow(
+                icon: Icons.description_outlined,
+                iconColor: _kMutedPurple,
+                title: 'Terms & Privacy',
+                showChevron: true,
+                showDivider: false,
+                onTap: () {},
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          InkWell(
+            onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.2)),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'Sign Out',
+                style: TextStyle(
+                  color: Color(0xFFFCA5A5),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title});
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.4),
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1,
         ),
       ),
     );
   }
 }
 
-class _AccountStubTab extends StatelessWidget {
-  const _AccountStubTab();
+class _ActionRowGroup extends StatelessWidget {
+  const _ActionRowGroup({required this.children});
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.person_outline_rounded,
-                size: 48,
-                color: _kMuted.withValues(alpha: 0.5),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        children: children,
+      ),
+    );
+  }
+}
+
+class _ActionRow extends StatelessWidget {
+  const _ActionRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    this.subtitle,
+    this.showChevron = false,
+    this.showDivider = true,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String? subtitle;
+  final bool showChevron;
+  final bool showDivider;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          border: showDivider
+              ? Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)))
+              : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Account',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.95),
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed(AccountPage.route);
-                },
-                child: const Text(
-                  'Manage account',
-                  style: TextStyle(
-                    color: _kOrange,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
+              alignment: Alignment.center,
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ),
+            ),
+            if (showChevron)
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: 0.2),
+                size: 24,
+              ),
+          ],
         ),
       ),
     );

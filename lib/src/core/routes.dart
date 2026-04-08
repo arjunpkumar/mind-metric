@@ -17,6 +17,7 @@ import 'package:mind_metric/src/presentation/quiz/quiz_success_page.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
 import 'package:mind_metric/src/presentation/splash/splash_page.dart';
 import 'package:mind_metric/src/presentation/web_view/web_view_page.dart';
+import 'package:mind_metric/src/presentation/payment/payment_page.dart';
 
 final Map<String, Widget Function(BuildContext context)> routes = {
   SplashPage.route: (_) => BlocProvider(
@@ -25,6 +26,7 @@ final Map<String, Widget Function(BuildContext context)> routes = {
       ),
   LoginPage.route: (_) => const LoginPage(),
   LandingPage.route: (_) => const LandingPage(),
+  PaymentPage.route: (_) => const PaymentPage(),
   AccountPage.route: (_) => const AccountPage(),
   HomePage.route: (_) => BlocProvider(
         create: (_) => HomeBloc(),
