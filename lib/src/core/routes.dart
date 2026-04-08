@@ -18,6 +18,7 @@ import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
 import 'package:mind_metric/src/presentation/splash/splash_page.dart';
 import 'package:mind_metric/src/presentation/web_view/web_view_page.dart';
 import 'package:mind_metric/src/presentation/payment/payment_page.dart';
+import 'package:mind_metric/src/presentation/result/shortlist_result_page.dart';
 
 final Map<String, Widget Function(BuildContext context)> routes = {
   SplashPage.route: (_) => BlocProvider(
@@ -39,6 +40,7 @@ final Map<String, Widget Function(BuildContext context)> routes = {
   QuizTimeExpiredPage.route: (context) => QuizTimeExpiredPage(
         onReturnToCompetitionHome: () => Navigator.of(context).pop(),
       ),
+  ShortlistResultPage.route: (_) => const ShortlistResultPage(),
 };
 
 Route<dynamic>? generatedRoutes(RouteSettings settings) {

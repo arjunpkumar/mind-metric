@@ -7,6 +7,7 @@ import 'package:mind_metric/src/presentation/account/account_page.dart';
 import 'package:mind_metric/src/presentation/home/home_page.dart';
 import 'package:mind_metric/src/presentation/payment/payment_page.dart';
 import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
+import 'package:mind_metric/src/presentation/result/shortlist_result_page.dart';
 
 const Color _kBg = Color(0xFF0B0B2E);
 const Color _kCardBg = Color(0xFF12143A);
@@ -437,7 +438,9 @@ class _ShortlistedCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          Navigator.of(context).pushNamed(ShortlistResultPage.route);
+        },
         borderRadius: BorderRadius.circular(14),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
