@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:mind_metric/config.dart';
 import 'package:mind_metric/generated/l10n.dart';
@@ -183,6 +185,33 @@ class AuthService {
       alternateSuccessUrl: APIEndpoints.logoutSessionUrl,
       isAuthTokenNeeded: false,
     );
+  }
+
+  Future<void> loginWithDio({
+    required String email,
+    required String password,
+  }) async {
+    final dio = Dio();
+    try {
+      final response = await dio.post(
+        'http://172.27.13.12:5062/api/Auth/Login',
+        data: {
+          "email": email,
+          "password": password,
+        },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('Login failed');
+      }
+    } catch (e) {
+      throw Exception('Login failed');
+    }
   }
 }
 

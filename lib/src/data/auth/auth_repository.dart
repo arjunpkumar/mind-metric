@@ -74,6 +74,13 @@ class AuthRepository {
     return saveCredentials(credentials);
   }
 
+  Future<void> loginWithDio({
+    required String email,
+    required String password,
+  }) async {
+    await authServices.loginWithDio(email: email, password: password);
+  }
+
   Future<void> _checkRemoteConfig() async {
     if (!configRepository.isInitialFetchCompleted()) {
       await Guard.runAsync(() async {
