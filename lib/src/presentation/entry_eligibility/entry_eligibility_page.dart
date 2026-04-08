@@ -6,7 +6,7 @@ import 'package:mind_metric/src/application/bloc/account/account_bloc.dart';
 import 'package:mind_metric/src/application/bloc/account/account_event.dart';
 import 'package:mind_metric/src/application/bloc/account/account_state.dart';
 import 'package:mind_metric/src/presentation/account/account_theme.dart';
-import 'package:mind_metric/src/presentation/home/home_page.dart';
+import 'package:mind_metric/src/presentation/payment/payment_page.dart';
 
 const String _kLogoUrl =
     'https://lucidengine.ai/wp-content/uploads/2024/02/le-powered-logo.png';
@@ -43,7 +43,7 @@ class _EntryEligibilityPageState extends State<EntryEligibilityPage> {
         listener: (context, state) {
           if (state.accountCreationStatus == AccountCreationStatus.success) {
             Navigator.of(context).pushNamedAndRemoveUntil(
-              HomePage.route,
+              PaymentPage.route,
               (route) => false,
             );
           } else if (state.accountCreationStatus ==
