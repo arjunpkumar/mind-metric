@@ -22,6 +22,7 @@ import 'package:mind_metric/src/utils/extensions.dart';
 import 'package:mind_metric/src/utils/guard.dart';
 import 'package:mind_metric/src/utils/secure_storage_util.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:synchronized/synchronized.dart';
 
@@ -79,6 +80,20 @@ class AuthRepository {
     required String password,
   }) async {
     await authServices.loginWithDio(email: email, password: password);
+  }
+
+  Future<void> logIn({
+    required String email,
+    required String password,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 700));
+    if (kBypassLoginNetwork) {
+      return;
+    }
+    if (Random().nextBool()) {
+      return;
+    }
+    throw Exception('Invalid credentials');
   }
 
   Future<void> _checkRemoteConfig() async {

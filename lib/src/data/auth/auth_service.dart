@@ -187,14 +187,14 @@ class AuthService {
     );
   }
 
-  Future<void> loginWithDio({
+  Future<Map<String, dynamic>> loginWithDio({
     required String email,
     required String password,
   }) async {
     final dio = Dio();
     try {
       final response = await dio.post(
-        'http://172.27.13.12:5062/api/Auth/Login',
+        'http://172.27.13.182:5062/api/Auth/Login',
         data: {
           "email": email,
           "password": password,
@@ -208,6 +208,13 @@ class AuthService {
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception('Login failed');
+      }
+      
+      final responseData = response.data as Map<String, dynamic>;
+      if (responseData['succeeded'] == true) {
+        return responseData['data'] as Map<String, dynamic>;
+      } else {
+        throw Exception(responseData['message'] ?? 'Login failed');
       }
     } catch (e) {
       throw Exception('Login failed');

@@ -12,6 +12,7 @@ import 'package:mind_metric/src/presentation/account/widgets/account_logo_header
 import 'package:mind_metric/src/presentation/account/widgets/account_synced_text_fields.dart';
 import 'package:mind_metric/src/presentation/account/widgets/account_tab_switcher.dart';
 import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
+import 'package:mind_metric/src/presentation/auth/verify_email/verify_email_page.dart';
 
 /// Dark create-account layout; stateless shell — all interactions go through [AccountBloc].
 class UserAccountScreen extends StatelessWidget {
@@ -46,6 +47,13 @@ class UserAccountScreen extends StatelessWidget {
                   const SnackBar(
                     content: Text('Account created successfully.'),
                     behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                Navigator.of(context).pushNamed(
+                  VerifyEmailPage.route,
+                  arguments: VerifyEmailRouteArgs(
+                    email: state.email,
+                    accountBloc: context.read<AccountBloc>(),
                   ),
                 );
                 context

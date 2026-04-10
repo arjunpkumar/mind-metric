@@ -19,7 +19,7 @@ const bool kBypassVerifyEmailNetwork = true;
 /// (the mock no longer fails at random). Set to `false` when the signup API is wired.
 const bool kBypassAccountCreationNetwork = true;
 
-/// When `true`, [LoginRepository.logIn] succeeds without a real API (mock no
+/// When `true`, [AuthRepository.logIn] succeeds without a real API (mock no
 /// longer fails at random). Set to `false` when auth/login API is wired.
 const bool kBypassLoginNetwork = true;
 

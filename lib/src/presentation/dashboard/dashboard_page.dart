@@ -8,6 +8,7 @@ import 'package:mind_metric/src/presentation/home/home_page.dart';
 import 'package:mind_metric/src/presentation/payment/payment_page.dart';
 import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
 import 'package:mind_metric/src/presentation/result/shortlist_result_page.dart';
+import 'package:mind_metric/src/data/core/repository_provider.dart';
 
 const Color _kBg = Color(0xFF0B0B2E);
 const Color _kCardBg = Color(0xFF12143A);
@@ -967,7 +968,12 @@ class _AccountTab extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           InkWell(
-            onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
+            onTap: () async {
+              await provideAuthRepository().signOut();
+              if (context.mounted) {
+                Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              }
+            },
             borderRadius: BorderRadius.circular(20),
             child: Container(
               width: double.infinity,

@@ -29,16 +29,60 @@ class VerifyEmailService {
     required String code,
   }) async {
     try {
-      final response = await _dio.post<dynamic>(
-        APIEndpoints.verifyEmailCodeUrl,
+      final dio = Dio();
+      final response = await dio.post<dynamic>(
+        'http://172.27.13.182:5062/api/Auth/ValidateEmail',
         data: <String, dynamic>{
           'email': email,
-          'code': code,
+          'otp': code,
         },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
       );
-      _ensureSuccess(response);
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('Unable to verify OTP. Please try again.');
+      }
     } on DioException catch (e) {
-      throw Exception(_dioErrorMessage(e));
+      if (e.response?.statusCode == 400 && e.response?.data != null) {
+        final data = e.response?.data;
+        if (data is Map<String, dynamic> && data['message'] != null) {
+          throw Exception(data['message'].toString());
+        }
+      }
+      throw Exception('Unable to verify OTP. Please try again.');
+    } catch (e) {
+      throw Exception('Unable to verify OTP. Please try again.');
+    }
+  }
+
+  Future<void> resendOTP({required String email}) async {
+    try {
+      final dio = Dio();
+      final response = await dio.post<dynamic>(
+        'http://172.27.13.182:5062/api/Auth/ResendOTP',
+        data: '"$email"',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('Unable to resend OTP. Please try again.');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400 && e.response?.data != null) {
+        final data = e.response?.data;
+        if (data is Map<String, dynamic> && data['message'] != null) {
+          throw Exception(data['message'].toString());
+        }
+      }
+      throw Exception('Unable to resend OTP. Please try again.');
+    } catch (e) {
+      throw Exception('Unable to resend OTP. Please try again.');
     }
   }
 

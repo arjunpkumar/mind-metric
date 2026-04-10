@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mind_metric/src/application/bloc/account/account_event.dart';
 import 'package:mind_metric/src/application/bloc/account/account_state.dart';
-import 'package:mind_metric/src/data/auth/account_repository.dart';
+import 'package:mind_metric/src/data/account/account_repository.dart';
 
 class AccountBloc extends Bloc<AccountEvent, AccountState> {
   AccountBloc({required AccountRepository accountRepository})
@@ -118,8 +118,8 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       emit(
         state.copyWith(
           accountCreationStatus: AccountCreationStatus.success,
-          email: '',
-          password: '',
+          email: state.email.trim(),
+          password: state.password,
           ageConfirmed: false,
           termsConfirmed: false,
           emailError: null,

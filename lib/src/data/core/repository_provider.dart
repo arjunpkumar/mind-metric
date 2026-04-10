@@ -8,10 +8,10 @@ import 'package:mind_metric/src/application/sync/job_connectivity.dart';
 import 'package:mind_metric/src/application/sync/job_manager.dart';
 import 'package:mind_metric/src/application/sync/job_timer.dart';
 import 'package:mind_metric/src/application/sync/syncable_provider.dart';
-import 'package:mind_metric/src/data/auth/account_repository.dart';
+import 'package:mind_metric/src/data/account/account_repository.dart';
+import 'package:mind_metric/src/data/account/account_service.dart';
 import 'package:mind_metric/src/data/auth/auth_repository.dart';
 import 'package:mind_metric/src/data/auth/auth_service.dart';
-import 'package:mind_metric/src/data/auth/login_repository.dart';
 import 'package:mind_metric/src/data/auth/user_repository.dart';
 import 'package:mind_metric/src/data/auth/user_service.dart';
 import 'package:mind_metric/src/data/auth/verify_email_repository.dart';
@@ -129,12 +129,12 @@ JobUtils provideJobUtils() {
   );
 }
 
-LoginRepository provideLoginRepository() {
-  return LoginRepository();
+AccountService provideAccountService() {
+  return AccountService();
 }
 
 AccountRepository provideAccountRepository() {
-  return AccountRepository();
+  return AccountRepository(accountService: provideAccountService());
 }
 
 VerifyEmailService provideVerifyEmailService() {
