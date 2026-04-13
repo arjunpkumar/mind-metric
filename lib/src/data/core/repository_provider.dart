@@ -22,6 +22,8 @@ import 'package:mind_metric/src/data/core/proxy/proxy_service.dart';
 import 'package:mind_metric/src/data/core/remote_config/remote_config_repository.dart';
 import 'package:mind_metric/src/data/core/remote_config/remote_config_service.dart';
 import 'package:mind_metric/src/data/core/sync/job_repository.dart';
+import 'package:mind_metric/src/data/quiz/quiz_service.dart';
+import 'package:mind_metric/src/data/quiz/quiz_repository.dart';
 import 'package:mind_metric/src/data/database/auth_settings_dao.dart';
 import 'package:mind_metric/src/data/database/core/app_database.dart';
 import 'package:mind_metric/src/data/database/remote_config_dao.dart';
@@ -145,6 +147,14 @@ VerifyEmailRepository provideVerifyEmailRepository() {
   return VerifyEmailRepository(
     service: provideVerifyEmailService(),
   );
+}
+
+QuizService provideQuizService() {
+  return QuizService();
+}
+
+QuizRepository provideQuizRepository() {
+  return QuizRepository(provideQuizService());
 }
 
 AuthRepository provideAuthRepository() {

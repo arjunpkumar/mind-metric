@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:mind_metric/src/presentation/account/account_theme.dart';
 import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 import 'package:mind_metric/src/presentation/quiz/qualification_quiz_models.dart';
+import 'package:mind_metric/src/data/core/repository_provider.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_success_page.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
 
@@ -42,15 +43,37 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
   Timer? _timer;
   bool _timedOut = false;
 
-  QualificationQuestion get _question =>
-      kQualificationQuestions[_questionIndex];
+  List<QualificationQuestion> _questions = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  int get _totalQuestions => kQualificationQuestions.length;
+  QualificationQuestion get _question => _questions[_questionIndex];
+
+  int get _totalQuestions => _questions.length;
 
   @override
   void initState() {
     super.initState();
-    _startQuestionTimer();
+    _loadQuestions();
+  }
+
+  Future<void> _loadQuestions() async {
+    try {
+      final repo = provideQuizRepository();
+      final questions = await repo.getRandomQuestions();
+      if (!mounted) return;
+      setState(() {
+        _questions = questions;
+        _isLoading = false;
+      });
+      _startQuestionTimer();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = "Failed to load questions. Please try again.";
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -139,7 +162,29 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
       child: Scaffold(
         backgroundColor: _kQuizBg,
         body: SafeArea(
-          child: Column(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator(color: _kPurple))
+              : _errorMessage != null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(_errorMessage!, style: const TextStyle(color: Colors.white)),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _isLoading = true;
+                                _errorMessage = null;
+                              });
+                              _loadQuestions();
+                            },
+                            child: const Text("Retry"),
+                          )
+                        ],
+                      ),
+                    )
+                  : Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
