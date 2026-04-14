@@ -23,6 +23,9 @@ const bool kBypassAccountCreationNetwork = true;
 /// longer fails at random). Set to `false` when auth/login API is wired.
 const bool kBypassLoginNetwork = true;
 
+/// MindMetric REST API host (login, register, quiz, verify-email OTP, etc.).
+const String kMindMetricApiBaseUrl = 'http://172.27.13.12:5062';
+
 const whiteListDocumentExtensions = [
   '.pdf',
   '.doc',

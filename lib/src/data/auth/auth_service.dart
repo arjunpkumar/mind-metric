@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:mind_metric/config.dart';
 import 'package:mind_metric/generated/l10n.dart';
 import 'package:mind_metric/src/core/app.dart';
@@ -10,7 +11,6 @@ import 'package:mind_metric/src/core/app_constants.dart';
 import 'package:mind_metric/src/data/database/core/app_database.dart';
 import 'package:mind_metric/src/presentation/web_view/web_view_page.dart';
 import 'package:mind_metric/src/utils/string_utils.dart';
-import 'package:http/http.dart' as http;
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -194,7 +194,7 @@ class AuthService {
     final dio = Dio();
     try {
       final response = await dio.post(
-        'http://172.27.13.182:5062/api/Auth/Login',
+        '$kMindMetricApiBaseUrl/api/Auth/Login',
         data: {
           "email": email,
           "password": password,
@@ -209,15 +209,56 @@ class AuthService {
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception('Login failed');
       }
-      
-      final responseData = response.data as Map<String, dynamic>;
-      if (responseData['succeeded'] == true) {
-        return responseData['data'] as Map<String, dynamic>;
-      } else {
-        throw Exception(responseData['message'] ?? 'Login failed');
+
+      if (response.data is! Map) {
+        throw Exception('Login failed: unexpected response shape');
       }
+
+      final responseData =
+          Map<String, dynamic>.from(response.data as Map<dynamic, dynamic>);
+
+      final succeeded = responseData['succeeded'] == true ||
+          responseData['succeeded'] == 'true' ||
+          responseData['success'] == true ||
+          responseData['Success'] == true;
+
+      if (!succeeded) {
+        throw Exception(
+          responseData['message']?.toString() ??
+              responseData['Message']?.toString() ??
+              'Login failed',
+        );
+      }
+
+      final merged = <String, dynamic>{};
+
+      final inner =
+          responseData['data'] ?? responseData['Data'] ?? responseData['result'];
+      if (inner is Map) {
+        merged.addAll(Map<String, dynamic>.from(inner));
+      }
+
+      const rootKeysToMerge = [
+        'userId',
+        'UserId',
+        'user_id',
+        'UserID',
+        'userid',
+        'user',
+        'User',
+        'userDto',
+        'UserDto',
+      ];
+      for (final key in rootKeysToMerge) {
+        if (responseData.containsKey(key) && !merged.containsKey(key)) {
+          merged[key] = responseData[key];
+        }
+      }
+
+      return merged;
     } catch (e) {
-      throw Exception('Login failed');
+      if (e is Exception) rethrow;
+      throw Exception('Login failed: $e');
     }
   }
 }

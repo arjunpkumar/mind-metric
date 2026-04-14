@@ -31,7 +31,7 @@ class VerifyEmailService {
     try {
       final dio = Dio();
       final response = await dio.post<dynamic>(
-        'http://172.27.13.182:5062/api/Auth/ValidateEmail',
+        '$kMindMetricApiBaseUrl/api/Auth/ValidateEmail',
         data: <String, dynamic>{
           'email': email,
           'otp': code,
@@ -62,7 +62,7 @@ class VerifyEmailService {
     try {
       final dio = Dio();
       final response = await dio.post<dynamic>(
-        'http://172.27.13.182:5062/api/Auth/ResendOTP',
+        '$kMindMetricApiBaseUrl/api/Auth/ResendOTP',
         data: '"$email"',
         options: Options(
           headers: {

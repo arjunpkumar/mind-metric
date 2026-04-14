@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mind_metric/src/data/core/repository_provider.dart';
 import 'package:mind_metric/src/presentation/account/account_theme.dart';
 import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 import 'package:mind_metric/src/presentation/quiz/qualification_quiz_models.dart';
-import 'package:mind_metric/src/data/core/repository_provider.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_success_page.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
 
@@ -45,6 +45,7 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
 
   List<QualificationQuestion> _questions = [];
   bool _isLoading = true;
+  bool _isSubmitting = false;
   String? _errorMessage;
 
   QualificationQuestion get _question => _questions[_questionIndex];
@@ -59,8 +60,18 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
 
   Future<void> _loadQuestions() async {
     try {
+      final userId = await provideAuthRepository().resolveQuizSubmitUserId();
+      if (userId == null) {
+        if (!mounted) return;
+        setState(() {
+          _errorMessage =
+              'Sign in to load the quiz. Your account id is required.';
+          _isLoading = false;
+        });
+        return;
+      }
       final repo = provideQuizRepository();
-      final questions = await repo.getRandomQuestions();
+      final questions = await repo.getRandomQuestions(userId: userId);
       if (!mounted) return;
       setState(() {
         _questions = questions;
@@ -109,10 +120,51 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
     });
   }
 
-  void _onNext() {
-    if (_timedOut || _selectedOptionIndex == null) return;
+  Future<void> _onNext() async {
+    if (_timedOut || _selectedOptionIndex == null || _isSubmitting) return;
 
-    final ok = _selectedOptionIndex == _question.correctOptionIndex;
+    final q = _question;
+    final selected = _selectedOptionIndex!;
+    final questionId = q.questionId;
+    final selectedOptionId = q.choices[selected].backendId;
+
+    if (questionId != null && selectedOptionId != null) {
+      setState(() => _isSubmitting = true);
+      try {
+        final userId =
+            await provideAuthRepository().resolveQuizSubmitUserId();
+        if (userId == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Unable to submit answer. Sign in again, or ensure your '
+                  'account id matches the quiz server.',
+                ),
+              ),
+            );
+          }
+          if (mounted) setState(() => _isSubmitting = false);
+          return;
+        }
+        await provideQuizRepository().submitAnswer(
+          userId: userId,
+          questionId: questionId,
+          selectedOptionId: selectedOptionId,
+        );
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not submit answer: $e')),
+          );
+        }
+        if (mounted) setState(() => _isSubmitting = false);
+        return;
+      }
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+
+    final ok = selected == q.correctOptionIndex;
     if (!ok) {
       _timer?.cancel();
       if (!mounted) return;
@@ -151,7 +203,8 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
         ? _kTimerBarGreen
         : AccountThemeColors.accent;
     final letters = ['A', 'B', 'C', 'D'];
-    final canProceed = _selectedOptionIndex != null && !_timedOut;
+    final canProceed =
+        _selectedOptionIndex != null && !_timedOut && !_isSubmitting;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -180,7 +233,7 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
                               _loadQuestions();
                             },
                             child: const Text("Retry"),
-                          )
+                          ),
                         ],
                       ),
                     )
@@ -374,12 +427,12 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
                         ),
                       ),
                       const SizedBox(height: 22),
-                      for (var i = 0; i < _question.options.length; i++)
+                      for (var i = 0; i < _question.choices.length; i++)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: _AnswerOptionTile(
                             letter: letters[i],
-                            label: _question.options[i],
+                            label: _question.choices[i].text,
                             selected: _selectedOptionIndex == i,
                             enabled: !_timedOut,
                             onTap: () {
@@ -430,7 +483,7 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: canProceed ? _onNext : null,
+                            onTap: canProceed ? () => _onNext() : null,
                             borderRadius: BorderRadius.circular(30),
                             child: const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16),

@@ -4,10 +4,13 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mind_metric/src/core/app.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
 import 'package:mind_metric/src/core/exceptions.dart';
 import 'package:mind_metric/src/data/auth/auth_service.dart';
 import 'package:mind_metric/src/data/auth/user_repository.dart';
+import 'package:mind_metric/src/data/auth/user_service.dart';
 import 'package:mind_metric/src/data/core/config_repository.dart';
 import 'package:mind_metric/src/data/core/log_services.dart';
 import 'package:mind_metric/src/data/core/remote_config/remote_config_repository.dart';
@@ -20,9 +23,8 @@ import 'package:mind_metric/src/presentation/widgets/loader_widget.dart';
 import 'package:mind_metric/src/utils/auth/auth_util.dart';
 import 'package:mind_metric/src/utils/extensions.dart';
 import 'package:mind_metric/src/utils/guard.dart';
+import 'package:mind_metric/src/utils/quiz_user_id_util.dart';
 import 'package:mind_metric/src/utils/secure_storage_util.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:mind_metric/src/core/app_constants.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:synchronized/synchronized.dart';
 
@@ -79,7 +81,62 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    await authServices.loginWithDio(email: email, password: password);
+    final data = await authServices.loginWithDio(email: email, password: password);
+    final user =
+        UserMapper().fromAuthLoginData(data, fallbackEmail: email.trim());
+    await userRepository.deleteUsers();
+    await userRepository.saveUser(user);
+
+    final quizUid = int.tryParse(user.id.trim());
+    if (quizUid != null) {
+      await settingsDao.setQuizSubmitUserId(quizUid);
+    }
+
+    final access = _loginResponseString(
+      data['accessToken'] ?? data['token'] ?? data['access_token'],
+    );
+    final idTok = _loginResponseString(
+      data['idToken'] ?? data['id_token'],
+    );
+    if (access != null) {
+      await authTokenDao.deleteTokens();
+      await authTokenDao.saveAuthToken(
+        AuthToken(
+          accessToken: access,
+          idToken: (idTok != null && idTok.isNotEmpty) ? idTok : access,
+          refreshToken: _loginResponseString(
+            data['refreshToken'] ?? data['refresh_token'],
+          ),
+        ),
+      );
+    }
+  }
+
+  String? _loginResponseString(dynamic value) {
+    if (value == null) return null;
+    final s = value.toString();
+    return s.isEmpty ? null : s;
+  }
+
+  /// Numeric id for [POST /api/Question/Submit].
+  ///
+  /// Order: value saved at login (Hive) → local [User.id] → JWT claims.
+  /// Does not require a user row if login persisted [SettingsDao.kQuizSubmitUserId].
+  Future<int?> resolveQuizSubmitUserId() async {
+    final fromLogin = await settingsDao.getQuizSubmitUserId();
+    if (fromLogin != null) return fromLogin;
+
+    final user = await userRepository.getCurrentUser();
+    if (user != null) {
+      final parsed = int.tryParse(user.id.trim());
+      if (parsed != null) return parsed;
+    }
+
+    final token = await getActiveToken();
+    if (token != null) {
+      return quizUserIdFromIdToken(token.idToken);
+    }
+    return null;
   }
 
   Future<void> logIn({
@@ -150,10 +207,8 @@ class AuthRepository {
     );
 
     final credentials = await authServices.refreshAccessToken(savedCredentials);
-    if (credentials != null) {
-      await _saveCredentials(credentials);
-      await _updateUser(_generateAuthTokenFromCredential(credentials));
-    }
+    await _saveCredentials(credentials);
+    await _updateUser(_generateAuthTokenFromCredential(credentials));
   }
 
   AuthToken _generateAuthTokenFromCredential(oauth2.Credentials credential) {

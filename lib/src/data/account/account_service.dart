@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:mind_metric/src/core/app_constants.dart';
 
 class AccountService {
   Future<void> register({
@@ -8,7 +9,7 @@ class AccountService {
     final dio = Dio();
     try {
       final response = await dio.post(
-        'http://172.27.13.182:5062/api/Auth/Register',
+        '$kMindMetricApiBaseUrl/api/Auth/Register',
         data: {
           "email": email,
           "password": password,

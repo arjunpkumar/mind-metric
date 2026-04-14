@@ -79,10 +79,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       );
       emit(state.copyWith(status: LoginFormStatus.submissionSuccess));
     } catch (e) {
+      final message = e is Exception
+          ? e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '')
+          : 'Login failed';
       emit(
         state.copyWith(
           status: LoginFormStatus.submissionFailure,
-          submissionErrorMessage: 'Login failed',
+          submissionErrorMessage: message,
         ),
       );
     }
