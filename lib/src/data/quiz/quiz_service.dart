@@ -22,6 +22,22 @@ class QuizService {
     }
   }
 
+  /// Returns how many quiz attempts the user has consumed (entries used).
+  Future<int> fetchTotalAttempts({required int userId}) async {
+    try {
+      final response = await _dio.get(
+        '$kMindMetricApiBaseUrl/api/Question/TotalAttempts',
+        queryParameters: <String, dynamic>{'userId': userId},
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load entry count');
+      }
+      return _parseNumericBody(response.data);
+    } catch (e) {
+      throw Exception('Failed to load entry count: $e');
+    }
+  }
+
   Future<void> submitAnswer({
     required int userId,
     required int questionId,
@@ -46,4 +62,34 @@ class QuizService {
       throw Exception('Failed to submit answer: $msg');
     }
   }
+}
+
+int _parseNumericBody(dynamic data) {
+  final direct = _tryParseIntLoose(data);
+  if (direct != null) return direct;
+  if (data is Map) {
+    final m = Map<String, dynamic>.from(data);
+    for (final k in [
+      'data',
+      'Data',
+      'count',
+      'value',
+      'result',
+      'totalAttempts',
+    ]) {
+      if (m.containsKey(k)) {
+        final v = _tryParseIntLoose(m[k]);
+        if (v != null) return v;
+      }
+    }
+  }
+  return 0;
+}
+
+int? _tryParseIntLoose(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  if (v is String) return int.tryParse(v.trim());
+  return null;
 }

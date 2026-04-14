@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:mind_metric/src/data/core/repository_provider.dart';
 import 'package:mind_metric/src/presentation/account/account_theme.dart';
 import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
+import 'package:mind_metric/src/presentation/dashboard/dashboard_page.dart';
 import 'package:mind_metric/src/presentation/quiz/qualification_quiz_models.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_success_page.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
@@ -880,10 +881,16 @@ class QuizIncorrectAnswerPage extends StatelessWidget {
                   const SizedBox(height: 32),
                   _LandingStyleCtaButton(
                     label: 'Return to Competition Home',
-                    onTap: () => Navigator.of(context).pop(),
+                    onTap: () {
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        DashboardPage.route,
+                        (route) => false,
+                        arguments: const DashboardRouteArgs(),
+                      );
+                    },
                   ),
                   const SizedBox(height: 14),
-                  OutlinedButton(
+                  OutlinedButton( 
                     onPressed: () {
                       Navigator.of(context).pushNamedAndRemoveUntil(
                         LoginPage.route,

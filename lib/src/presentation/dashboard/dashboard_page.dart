@@ -3,12 +3,10 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mind_metric/src/presentation/account/account_page.dart';
-import 'package:mind_metric/src/presentation/home/home_page.dart';
+import 'package:mind_metric/src/data/core/repository_provider.dart';
 import 'package:mind_metric/src/presentation/payment/payment_page.dart';
 import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
 import 'package:mind_metric/src/presentation/result/shortlist_result_page.dart';
-import 'package:mind_metric/src/data/core/repository_provider.dart';
 
 const Color _kBg = Color(0xFF0B0B2E);
 const Color _kCardBg = Color(0xFF12143A);
@@ -31,7 +29,7 @@ const String _kLogoUrl =
 /// Fixed end time for the competition countdown (demo).
 final DateTime _kCompetitionEndUtc = DateTime.utc(2026, 7, 2, 14, 22, 26);
 
-const _kEntriesUsed = 4;
+/// Total qualification entry slots per user (matches API / product rules).
 const _kEntriesMax = 10;
 const _kShortlistedStat = 1;
 
@@ -67,6 +65,10 @@ class _DashboardPageState extends State<DashboardPage> {
   Timer? _tick;
   Duration _remaining = Duration.zero;
 
+  /// From [GET /api/Question/TotalAttempts]. `null` if still loading or unavailable.
+  int? _entriesUsed;
+  bool _entriesLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -75,6 +77,34 @@ class _DashboardPageState extends State<DashboardPage> {
       if (!mounted) return;
       setState(_updateRemaining);
     });
+    _loadEntryStats();
+  }
+
+  Future<void> _loadEntryStats() async {
+    final userId = await provideAuthRepository().resolveQuizSubmitUserId();
+    if (!mounted) return;
+    if (userId == null) {
+      setState(() {
+        _entriesLoading = false;
+        _entriesUsed = null;
+      });
+      return;
+    }
+    try {
+      final count =
+          await provideQuizRepository().getTotalAttempts(userId: userId);
+      if (!mounted) return;
+      setState(() {
+        _entriesUsed = count < 0 ? 0 : count;
+        _entriesLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _entriesLoading = false;
+        _entriesUsed = null;
+      });
+    }
   }
 
   void _updateRemaining() {
@@ -114,8 +144,15 @@ class _DashboardPageState extends State<DashboardPage> {
                     userName: widget.userName,
                     shortlistedEntryRef: widget.shortlistedEntryRef,
                     remaining: _remaining,
+                    entriesUsed: _entriesUsed,
+                    entriesLoading: _entriesLoading,
+                    entriesMax: _kEntriesMax,
                   ),
-                  const _MyEntriesTab(),
+                  _MyEntriesTab(
+                    entriesUsed: _entriesUsed,
+                    entriesLoading: _entriesLoading,
+                    entriesMax: _kEntriesMax,
+                  ),
                   const _AccountTab(),
                 ],
               ),
@@ -149,11 +186,17 @@ class _DashboardHomeTab extends StatelessWidget {
     required this.userName,
     required this.shortlistedEntryRef,
     required this.remaining,
+    required this.entriesUsed,
+    required this.entriesLoading,
+    required this.entriesMax,
   });
 
   final String userName;
   final String shortlistedEntryRef;
   final Duration remaining;
+  final int? entriesUsed;
+  final bool entriesLoading;
+  final int entriesMax;
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +204,9 @@ class _DashboardHomeTab extends StatelessWidget {
     final hours = remaining.inHours.remainder(24);
     final mins = remaining.inMinutes.remainder(60);
     final secs = remaining.inSeconds.remainder(60);
-    final slotsLeft = _kEntriesMax - _kEntriesUsed;
+    final used = entriesUsed;
+    final slotsLeft =
+        used == null ? null : (entriesMax - used).clamp(0, entriesMax);
 
     return SafeArea(
       bottom: false,
@@ -171,7 +216,6 @@ class _DashboardHomeTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   child: Align(
@@ -224,7 +268,8 @@ class _DashboardHomeTab extends StatelessWidget {
               children: [
                 Expanded(
                   child: _StatMiniCard(
-                    value: '$_kEntriesUsed',
+                    value:
+                        entriesLoading ? '…' : (used == null ? '—' : '$used'),
                     label: 'Entries Used',
                     valueColor: Colors.white,
                   ),
@@ -232,7 +277,9 @@ class _DashboardHomeTab extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _StatMiniCard(
-                    value: '$slotsLeft',
+                    value: entriesLoading
+                        ? '…'
+                        : (slotsLeft == null ? '—' : '$slotsLeft'),
                     label: 'Slots Left',
                     valueColor: Colors.white,
                   ),
@@ -330,7 +377,11 @@ class _DashboardHomeTab extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              '$_kEntriesUsed of $_kEntriesMax entries used · $slotsLeft remaining',
+              entriesLoading
+                  ? 'Loading entry stats…'
+                  : (used == null || slotsLeft == null
+                      ? 'Entry stats unavailable. Sign in to sync.'
+                      : '$used of $entriesMax entries used · $slotsLeft remaining'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: _kMuted.withValues(alpha: 0.85),
@@ -363,7 +414,6 @@ class _IncompleteEntryCard extends StatelessWidget {
         ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: Column(
@@ -603,7 +653,15 @@ class _CountdownUnit extends StatelessWidget {
 }
 
 class _MyEntriesTab extends StatelessWidget {
-  const _MyEntriesTab();
+  const _MyEntriesTab({
+    required this.entriesUsed,
+    required this.entriesLoading,
+    required this.entriesMax,
+  });
+
+  final int? entriesUsed;
+  final bool entriesLoading;
+  final int entriesMax;
 
   @override
   Widget build(BuildContext context) {
@@ -640,15 +698,21 @@ class _MyEntriesTab extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 child: Text.rich(
                   TextSpan(
-                    text: '4 ',
+                    text: entriesLoading
+                        ? '… '
+                        : entriesUsed == null
+                            ? '— '
+                            : '$entriesUsed ',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
@@ -656,7 +720,7 @@ class _MyEntriesTab extends StatelessWidget {
                     ),
                     children: [
                       TextSpan(
-                        text: '/ 10',
+                        text: '/ $entriesMax',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.4),
                           fontSize: 12,
@@ -737,7 +801,9 @@ class _EntryRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isShortlisted ? _kOrange.withValues(alpha: 0.05) : _kCardBg.withValues(alpha: 0.6),
+        color: isShortlisted
+            ? _kOrange.withValues(alpha: 0.05)
+            : _kCardBg.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isShortlisted
@@ -752,7 +818,8 @@ class _EntryRow extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: statusBgColor,
                   borderRadius: BorderRadius.circular(20),
@@ -783,7 +850,9 @@ class _EntryRow extends StatelessWidget {
             TextSpan(
               text: '# ',
               style: TextStyle(
-                color: isShortlisted ? _kOrange.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.3),
+                color: isShortlisted
+                    ? _kOrange.withValues(alpha: 0.8)
+                    : Colors.white.withValues(alpha: 0.3),
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
               ),
@@ -837,7 +906,9 @@ class _AccountTab extends StatelessWidget {
           Container(
             padding: const EdgeInsets.only(bottom: 24),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+              border: Border(
+                  bottom:
+                      BorderSide(color: Colors.white.withValues(alpha: 0.05))),
             ),
             child: Column(
               children: [
@@ -864,20 +935,26 @@ class _AccountTab extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: const LinearGradient(
-                          colors: [Colors.deepPurpleAccent, _kOrange, _kOrangeDeep],
+                          colors: [
+                            Colors.deepPurpleAccent,
+                            _kOrange,
+                            _kOrangeDeep
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            width: 2),
                       ),
                       alignment: Alignment.center,
                       child: const Text(
-                         'JD',
-                         style: TextStyle(
-                           color: Colors.white,
-                           fontSize: 26,
-                           fontWeight: FontWeight.w900,
-                         ),
+                        'JD',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ],
@@ -971,7 +1048,8 @@ class _AccountTab extends StatelessWidget {
             onTap: () async {
               await provideAuthRepository().signOut();
               if (context.mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/', (route) => false);
               }
             },
             borderRadius: BorderRadius.circular(20),
@@ -981,7 +1059,8 @@ class _AccountTab extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.redAccent.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.2)),
+                border:
+                    Border.all(color: Colors.redAccent.withValues(alpha: 0.2)),
               ),
               alignment: Alignment.center,
               child: const Text(
@@ -1068,7 +1147,9 @@ class _ActionRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           border: showDivider
-              ? Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)))
+              ? Border(
+                  bottom:
+                      BorderSide(color: Colors.white.withValues(alpha: 0.05)))
               : null,
         ),
         child: Row(
@@ -1199,15 +1280,15 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               size: 26,
-              color: selected
-                  ? activeColor
-                  : _kMuted.withValues(alpha: 0.45),
+              color: selected ? activeColor : _kMuted.withValues(alpha: 0.45),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: selected ? _kActiveTabLabel : _kMuted.withValues(alpha: 0.5),
+                color: selected
+                    ? _kActiveTabLabel
+                    : _kMuted.withValues(alpha: 0.5),
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),

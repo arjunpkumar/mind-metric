@@ -76,4 +76,8 @@ class QuizRepository {
       selectedOptionId: selectedOptionId,
     );
   }
+
+  Future<int> getTotalAttempts({required int userId}) {
+    return quizService.fetchTotalAttempts(userId: userId);
+  }
 }
