@@ -38,7 +38,13 @@ final Map<String, Widget Function(BuildContext context)> routes = {
   CreativeSubmissionPage.route: (_) => const CreativeSubmissionPage(),
   EntrySubmittedPage.route: (_) => const EntrySubmittedPage(),
   QuizTimeExpiredPage.route: (context) => QuizTimeExpiredPage(
-        onReturnToCompetitionHome: () => Navigator.of(context).pop(),
+        onReturnToCompetitionHome: () {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            DashboardPage.route,
+            (route) => false,
+            arguments: const DashboardRouteArgs(),
+          );
+        },
       ),
   ShortlistResultPage.route: (_) => const ShortlistResultPage(),
 };

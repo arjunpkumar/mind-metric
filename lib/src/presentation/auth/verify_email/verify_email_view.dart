@@ -54,6 +54,12 @@ class VerifyEmailView extends StatelessWidget {
           listenWhen: (p, c) => p.status != c.status,
           listener: (context, state) {
             if (state.status == VerifyEmailStatus.success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Account created successfully.'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
               Navigator.of(context).pushNamedAndRemoveUntil(
                 LoginPage.route,
                 (_) => false,

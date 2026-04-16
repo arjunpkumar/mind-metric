@@ -43,12 +43,6 @@ class UserAccountScreen extends StatelessWidget {
               }
               if (state.accountCreationStatus ==
                   AccountCreationStatus.success) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Account created successfully.'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
                 Navigator.of(context).pushNamed(
                   VerifyEmailPage.route,
                   arguments: VerifyEmailRouteArgs(

@@ -38,13 +38,14 @@ class QuizService {
     }
   }
 
-  Future<void> submitAnswer({
+  /// Returns parsed JSON body from a successful submit (used for correctness).
+  Future<Map<String, dynamic>> submitAnswer({
     required int userId,
     required int questionId,
     required int selectedOptionId,
   }) async {
     try {
-      final response = await _dio.post<Map<String, dynamic>>(
+      final response = await _dio.post<dynamic>(
         '$kMindMetricApiBaseUrl/api/Question/Submit',
         data: <String, dynamic>{
           'userId': userId,
@@ -57,9 +58,53 @@ class QuizService {
       if (code == null || code < 200 || code >= 300) {
         throw Exception('Submit failed (${code ?? 'unknown'})');
       }
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return data;
+      }
+      if (data is Map) {
+        return Map<String, dynamic>.from(data);
+      }
+      return <String, dynamic>{};
     } on DioException catch (e) {
       final msg = e.response?.data?.toString() ?? e.message;
       throw Exception('Failed to submit answer: $msg');
+    }
+  }
+
+  Future<Map<String, dynamic>> submitCreativeEntry({
+    required int userId,
+    required String userText,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '$kMindMetricApiBaseUrl/api/MyEntries/Evaluate',
+        data: <String, dynamic>{
+          'user_text': userText,
+          'userId': userId,
+        },
+        options: Options(contentType: Headers.jsonContentType),
+      );
+      final code = response.statusCode;
+      if (code == null || code < 200 || code >= 300) {
+        throw Exception('Creative submission failed (${code ?? 'unknown'})');
+      }
+      final data = response.data;
+      if (data is Map) {
+        return Map<String, dynamic>.from(data);
+      }
+      return <String, dynamic>{'data': data};
+    } on DioException catch (e) {
+      final serverData = e.response?.data;
+      if (serverData is Map) {
+        final map = Map<String, dynamic>.from(serverData);
+        final msg = map['message']?.toString();
+        if (msg != null && msg.isNotEmpty) {
+          throw Exception(msg);
+        }
+      }
+      final msg = e.response?.data?.toString() ?? e.message;
+      throw Exception('Creative submission failed: $msg');
     }
   }
 }

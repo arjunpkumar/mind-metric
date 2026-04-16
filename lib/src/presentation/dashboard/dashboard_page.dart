@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mind_metric/src/data/core/repository_provider.dart';
 import 'package:mind_metric/src/presentation/payment/payment_page.dart';
-import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
+// import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
 import 'package:mind_metric/src/presentation/result/shortlist_result_page.dart';
 
 const Color _kBg = Color(0xFF0B0B2E);
@@ -207,6 +207,7 @@ class _DashboardHomeTab extends StatelessWidget {
     final used = entriesUsed;
     final slotsLeft =
         used == null ? null : (entriesMax - used).clamp(0, entriesMax);
+    final canAddEntry = used == null || used < entriesMax;
 
     return SafeArea(
       bottom: false,
@@ -254,14 +255,14 @@ class _DashboardHomeTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 22),
-            _IncompleteEntryCard(
-              onResume: () {
-                Navigator.of(context).pushNamed(
-                  QualificationQuizPage.route,
-                );
-              },
-            ),
-            const SizedBox(height: 14),
+            // _IncompleteEntryCard(
+            //   onResume: () {
+            //     Navigator.of(context).pushNamed(
+            //       QualificationQuizPage.route,
+            //     );
+            //   },
+            // ),
+            // const SizedBox(height: 14),
             _ShortlistedCard(entryRef: shortlistedEntryRef),
             const SizedBox(height: 18),
             Row(
@@ -337,37 +338,44 @@ class _DashboardHomeTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 28),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                gradient: const LinearGradient(
-                  colors: [_kOrange, _kOrangeDeep],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: _kOrangeGlow,
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(PaymentPage.route);
-                  },
+            Opacity(
+              opacity: canAddEntry ? 1 : 0.5,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(
-                      child: Text(
-                        'Add Another Entry →',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.2,
+                  gradient: const LinearGradient(
+                    colors: [_kOrange, _kOrangeDeep],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _kOrangeGlow,
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: canAddEntry
+                        ? () {
+                            Navigator.of(context).pushNamed(PaymentPage.route);
+                          }
+                        : null,
+                    borderRadius: BorderRadius.circular(28),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: Text(
+                          canAddEntry
+                              ? 'Add Another Entry →'
+                              : 'Entry Limit Reached',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
                         ),
                       ),
                     ),

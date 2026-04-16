@@ -60,31 +60,42 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
   }
 
   Future<void> _loadQuestions() async {
+    void failWith(String message) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = message;
+        _isLoading = false;
+      });
+    }
+
     try {
-      final userId = await provideAuthRepository().resolveQuizSubmitUserId();
+      final userId = await provideAuthRepository()
+          .resolveQuizSubmitUserId()
+          .timeout(const Duration(seconds: 12));
       if (userId == null) {
-        if (!mounted) return;
-        setState(() {
-          _errorMessage =
-              'Sign in to load the quiz. Your account id is required.';
-          _isLoading = false;
-        });
+        failWith('Sign in to load the quiz. Your account id is required.');
         return;
       }
+
       final repo = provideQuizRepository();
-      final questions = await repo.getRandomQuestions(userId: userId);
+      final questions = await repo
+          .getRandomQuestions(userId: userId)
+          .timeout(const Duration(seconds: 20));
+      if (questions.isEmpty) {
+        failWith('No quiz questions available right now. Please try again.');
+        return;
+      }
+
       if (!mounted) return;
       setState(() {
         _questions = questions;
         _isLoading = false;
       });
       _startQuestionTimer();
+    } on TimeoutException {
+      failWith('Loading quiz took too long. Check network and retry.');
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _errorMessage = "Failed to load questions. Please try again.";
-        _isLoading = false;
-      });
+      failWith("Failed to load questions. Please try again.");
     }
   }
 
@@ -129,6 +140,10 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
     final questionId = q.questionId;
     final selectedOptionId = q.choices[selected].backendId;
 
+    /// Server [Question/Submit] is authoritative; [Question/Random] options
+    /// often use `position: 0` for every choice, so local index is unreliable.
+    bool? serverSaysCorrect;
+
     if (questionId != null && selectedOptionId != null) {
       setState(() => _isSubmitting = true);
       try {
@@ -148,7 +163,7 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
           if (mounted) setState(() => _isSubmitting = false);
           return;
         }
-        await provideQuizRepository().submitAnswer(
+        serverSaysCorrect = await provideQuizRepository().submitAnswer(
           userId: userId,
           questionId: questionId,
           selectedOptionId: selectedOptionId,
@@ -165,7 +180,7 @@ class _QualificationQuizPageState extends State<QualificationQuizPage> {
       if (mounted) setState(() => _isSubmitting = false);
     }
 
-    final ok = selected == q.correctOptionIndex;
+    final ok = serverSaysCorrect ?? (selected == q.correctOptionIndex);
     if (!ok) {
       _timer?.cancel();
       if (!mounted) return;
@@ -661,7 +676,13 @@ class QualificationQuizResultPage extends StatelessWidget {
   Widget build(BuildContext context) {
     if (timedOut) {
       return QuizTimeExpiredPage(
-        onReturnToCompetitionHome: () => Navigator.of(context).pop(),
+        onReturnToCompetitionHome: () {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            DashboardPage.route,
+            (route) => false,
+            arguments: const DashboardRouteArgs(),
+          );
+        },
       );
     }
 

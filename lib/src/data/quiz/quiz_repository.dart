@@ -47,7 +47,14 @@ class QuizRepository {
           ),
         );
 
-        if (opt['position'] == 1) {
+        final isMarkedCorrect = opt['isCorrect'] == true ||
+            opt['IsCorrect'] == true ||
+            opt['correct'] == true ||
+            opt['isAnswer'] == true;
+        if (isMarkedCorrect) {
+          correctIndex = i;
+        } else if (opt['position'] == 1) {
+          // Some backends mark the keyed answer with position 1.
           correctIndex = i;
         }
       }
@@ -65,19 +72,94 @@ class QuizRepository {
     return questions;
   }
 
-  Future<void> submitAnswer({
+  /// Uses server response as source of truth (Random API often omits correct flags).
+  Future<bool> submitAnswer({
     required int userId,
     required int questionId,
     required int selectedOptionId,
-  }) {
-    return quizService.submitAnswer(
+  }) async {
+    final json = await quizService.submitAnswer(
       userId: userId,
       questionId: questionId,
       selectedOptionId: selectedOptionId,
     );
+    return _submitResponseIndicatesCorrect(json);
   }
 
   Future<int> getTotalAttempts({required int userId}) {
     return quizService.fetchTotalAttempts(userId: userId);
   }
+
+  Future<String?> submitCreativeEntry({
+    required int userId,
+    required String userText,
+  }) async {
+    final response = await quizService.submitCreativeEntry(
+      userId: userId,
+      userText: userText,
+    );
+
+    final succeeded = response['succeeded'];
+    if (succeeded == false || succeeded == 'false') {
+      throw Exception(
+        response['message']?.toString() ?? 'Creative submission failed',
+      );
+    }
+
+    final candidates = <dynamic>[
+      response['entryReference'],
+      response['entryRef'],
+      response['reference'],
+      response['entry_reference'],
+      (response['data'] is Map)
+          ? (response['data'] as Map<dynamic, dynamic>)['entryReference']
+          : null,
+      (response['data'] is Map)
+          ? (response['data'] as Map<dynamic, dynamic>)['entryRef']
+          : null,
+      (response['data'] is Map)
+          ? (response['data'] as Map<dynamic, dynamic>)['reference']
+          : null,
+    ];
+
+    for (final value in candidates) {
+      if (value == null) continue;
+      final s = value.toString().trim();
+      if (s.isNotEmpty) return s;
+    }
+    return null;
+  }
+}
+
+/// Interprets [POST /api/Question/Submit] JSON (observed: wrong → isGameOver true).
+bool _submitResponseIndicatesCorrect(Map<String, dynamic> json) {
+  final explicit = json['isCorrect'] ??
+      json['IsCorrect'] ??
+      json['correct'] ??
+      json['Correct'];
+  if (explicit == true || explicit == 'true') {
+    return true;
+  }
+  if (explicit == false || explicit == 'false') {
+    return false;
+  }
+
+  final msg = json['message']?.toString().toLowerCase() ?? '';
+  if (msg.contains('wrong')) {
+    return false;
+  }
+  if (msg.contains('correct')) {
+    return true;
+  }
+
+  final gameOver = json['isGameOver'];
+  if (gameOver == true) {
+    return false;
+  }
+  if (gameOver == false) {
+    return true;
+  }
+
+  // Unknown shape: do not assume wrong (avoid false failures).
+  return true;
 }
