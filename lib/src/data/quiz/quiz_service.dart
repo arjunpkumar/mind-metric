@@ -38,6 +38,22 @@ class QuizService {
     }
   }
 
+  /// Count of shortlisted entries from [GET /api/MyEntries/Shortlisted].
+  Future<int> fetchShortlistedCount({required int userId}) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        '$kMindMetricApiBaseUrl/api/MyEntries/Shortlisted',
+        queryParameters: <String, dynamic>{'userId': userId},
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load shortlisted count');
+      }
+      return _parseShortlistedCount(response.data);
+    } catch (e) {
+      throw Exception('Failed to load shortlisted count: $e');
+    }
+  }
+
   /// Returns parsed JSON body from a successful submit (used for correctness).
   Future<Map<String, dynamic>> submitAnswer({
     required int userId,
@@ -125,6 +141,26 @@ int _parseNumericBody(dynamic data) {
       if (m.containsKey(k)) {
         final v = _tryParseIntLoose(m[k]);
         if (v != null) return v;
+      }
+    }
+  }
+  return 0;
+}
+
+int _parseShortlistedCount(dynamic data) {
+  if (data is List) {
+    return data.length;
+  }
+  final n = _tryParseIntLoose(data);
+  if (n != null) {
+    return n;
+  }
+  if (data is Map) {
+    final m = Map<String, dynamic>.from(data);
+    for (final k in ['data', 'Data', 'items', 'entries', 'results']) {
+      final v = m[k];
+      if (v is List) {
+        return v.length;
       }
     }
   }

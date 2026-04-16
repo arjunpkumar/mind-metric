@@ -277,8 +277,7 @@ class APIEndpoints {
       '${_restRoot}auth/email/send-verification-code';
 
   /// POST JSON: `{ "email": "<address>", "code": "<6-digit>" }` — confirms the code.
-  static String get verifyEmailCodeUrl =>
-      '${_restRoot}auth/email/verify-code';
+  static String get verifyEmailCodeUrl => '${_restRoot}auth/email/verify-code';
 }
 
 class NetworkClient {

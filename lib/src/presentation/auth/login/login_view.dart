@@ -6,8 +6,7 @@ import 'package:mind_metric/src/application/bloc/auth/login/login_bloc.dart';
 import 'package:mind_metric/src/application/bloc/auth/login/login_event.dart';
 import 'package:mind_metric/src/application/bloc/auth/login/login_state.dart';
 import 'package:mind_metric/src/presentation/account/account_page.dart';
-import 'package:mind_metric/src/presentation/home/home_page.dart';
-import 'package:mind_metric/src/presentation/payment/payment_page.dart';
+import 'package:mind_metric/src/presentation/dashboard/dashboard_page.dart';
 
 const Color _kBg = Color(0xFF101438);
 const Color _kMuted = Color(0xFFA9AEC1);
@@ -34,9 +33,13 @@ class LoginView extends StatelessWidget {
           listenWhen: (prev, curr) => prev.status != curr.status,
           listener: (context, state) {
             if (state.status == LoginFormStatus.submissionSuccess) {
+              final name = state.email.trim();
               Navigator.of(context).pushNamedAndRemoveUntil(
-                PaymentPage.route,
+                DashboardPage.route,
                 (route) => false,
+                arguments: name.isEmpty
+                    ? const DashboardRouteArgs()
+                    : DashboardRouteArgs(userName: name),
               );
             } else if (state.status == LoginFormStatus.submissionFailure) {
               final msg =

@@ -90,6 +90,10 @@ class QuizRepository {
     return quizService.fetchTotalAttempts(userId: userId);
   }
 
+  Future<int> getShortlistedCount({required int userId}) {
+    return quizService.fetchShortlistedCount(userId: userId);
+  }
+
   Future<String?> submitCreativeEntry({
     required int userId,
     required String userText,

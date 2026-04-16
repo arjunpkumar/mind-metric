@@ -31,7 +31,6 @@ final DateTime _kCompetitionEndUtc = DateTime.utc(2026, 7, 2, 14, 22, 26);
 
 /// Total qualification entry slots per user (matches API / product rules).
 const _kEntriesMax = 10;
-const _kShortlistedStat = 1;
 
 class DashboardRouteArgs {
   const DashboardRouteArgs({
@@ -67,6 +66,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// From [GET /api/Question/TotalAttempts]. `null` if still loading or unavailable.
   int? _entriesUsed;
+
+  /// From [GET /api/MyEntries/Shortlisted] (array length). Defaults to 0 until loaded or if unavailable.
+  int _shortlistedCount = 0;
   bool _entriesLoading = true;
 
   @override
@@ -87,24 +89,31 @@ class _DashboardPageState extends State<DashboardPage> {
       setState(() {
         _entriesLoading = false;
         _entriesUsed = null;
+        _shortlistedCount = 0;
       });
       return;
     }
+    final repo = provideQuizRepository();
+    int? used;
+    var shortlist = 0;
     try {
-      final count =
-          await provideQuizRepository().getTotalAttempts(userId: userId);
-      if (!mounted) return;
-      setState(() {
-        _entriesUsed = count < 0 ? 0 : count;
-        _entriesLoading = false;
-      });
+      final c = await repo.getTotalAttempts(userId: userId);
+      used = c < 0 ? 0 : c;
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _entriesLoading = false;
-        _entriesUsed = null;
-      });
+      used = null;
     }
+    try {
+      final s = await repo.getShortlistedCount(userId: userId);
+      shortlist = s < 0 ? 0 : s;
+    } catch (_) {
+      shortlist = 0;
+    }
+    if (!mounted) return;
+    setState(() {
+      _entriesUsed = used;
+      _shortlistedCount = shortlist;
+      _entriesLoading = false;
+    });
   }
 
   void _updateRemaining() {
@@ -145,6 +154,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     shortlistedEntryRef: widget.shortlistedEntryRef,
                     remaining: _remaining,
                     entriesUsed: _entriesUsed,
+                    shortlistedCount: _shortlistedCount,
                     entriesLoading: _entriesLoading,
                     entriesMax: _kEntriesMax,
                   ),
@@ -187,6 +197,7 @@ class _DashboardHomeTab extends StatelessWidget {
     required this.shortlistedEntryRef,
     required this.remaining,
     required this.entriesUsed,
+    required this.shortlistedCount,
     required this.entriesLoading,
     required this.entriesMax,
   });
@@ -195,6 +206,7 @@ class _DashboardHomeTab extends StatelessWidget {
   final String shortlistedEntryRef;
   final Duration remaining;
   final int? entriesUsed;
+  final int shortlistedCount;
   final bool entriesLoading;
   final int entriesMax;
 
@@ -288,7 +300,7 @@ class _DashboardHomeTab extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _StatMiniCard(
-                    value: '$_kShortlistedStat',
+                    value: entriesLoading ? '…' : '$shortlistedCount',
                     label: 'Shortlisted',
                     valueColor: _kShortlistGreen,
                   ),

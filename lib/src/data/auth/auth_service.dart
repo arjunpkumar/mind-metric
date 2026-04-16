@@ -191,23 +191,32 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final dio = Dio();
+    // Treat 4xx as normal responses so we can read API `message` / `succeeded`
+    // (Dio’s default validateStatus throws on 400 before we parse the body).
+    final dio = Dio(
+      BaseOptions(
+        validateStatus: (status) => status != null && status < 500,
+      ),
+    );
     try {
-      final response = await dio.post(
+      final response = await dio.post<dynamic>(
         '$kMindMetricApiBaseUrl/api/Auth/Login',
-        data: {
-          "email": email,
-          "password": password,
+        data: <String, dynamic>{
+          'email': email,
+          'password': password,
         },
         options: Options(
-          headers: {
+          headers: <String, dynamic>{
             'Content-Type': 'application/json',
+            'accept': '*/*',
           },
         ),
       );
 
-      if (response.statusCode != 200 && response.statusCode != 201) {
-        throw Exception('Login failed');
+      final code = response.statusCode;
+      if (code == null || code < 200 || code >= 300) {
+        throw Exception(_loginErrorMessageFromResponse(response.data) ??
+            'Login failed (${code ?? 'unknown'})');
       }
 
       if (response.data is! Map) {
@@ -256,10 +265,34 @@ class AuthService {
       }
 
       return merged;
+    } on DioException catch (e) {
+      throw Exception(
+        _loginErrorMessageFromResponse(e.response?.data) ??
+            e.message ??
+            'Login failed: network error',
+      );
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Login failed: $e');
     }
+  }
+
+  String? _loginErrorMessageFromResponse(dynamic data) {
+    if (data is Map) {
+      final m = Map<String, dynamic>.from(data);
+      final msg = m['message'] ?? m['Message'] ?? m['title'] ?? m['detail'];
+      if (msg != null && msg.toString().trim().isNotEmpty) {
+        return msg.toString();
+      }
+      final errors = m['errors'];
+      if (errors is Map && errors.isNotEmpty) {
+        final first = errors.values.first;
+        if (first is List && first.isNotEmpty) {
+          return first.first.toString();
+        }
+      }
+    }
+    return null;
   }
 }
 
