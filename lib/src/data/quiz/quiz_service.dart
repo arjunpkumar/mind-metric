@@ -38,19 +38,80 @@ class QuizService {
     }
   }
 
-  /// Count of shortlisted entries from [GET /api/MyEntries/Shortlisted].
-  Future<int> fetchShortlistedCount({required int userId}) async {
+  /// Shortlisted rows from [GET /api/MyEntries/Shortlisted].
+  Future<List<Map<String, dynamic>>> fetchShortlistedEntries({
+    required int userId,
+  }) async {
     try {
       final response = await _dio.get<dynamic>(
         '$kMindMetricApiBaseUrl/api/MyEntries/Shortlisted',
         queryParameters: <String, dynamic>{'userId': userId},
+        options: Options(headers: <String, dynamic>{'accept': '*/*'}),
       );
       if (response.statusCode != 200) {
-        throw Exception('Failed to load shortlisted count');
+        throw Exception('Failed to load shortlisted entries');
       }
-      return _parseShortlistedCount(response.data);
+      return _parseShortlistedEntriesList(response.data);
     } catch (e) {
-      throw Exception('Failed to load shortlisted count: $e');
+      throw Exception('Failed to load shortlisted entries: $e');
+    }
+  }
+
+  /// Same endpoint as [fetchShortlistedEntries]; returns list length.
+  Future<int> fetchShortlistedCount({required int userId}) async {
+    final list = await fetchShortlistedEntries(userId: userId);
+    return list.length;
+  }
+
+  /// All creative entries for the user from [GET /api/MyEntries/GetAllMyEntries].
+  Future<List<Map<String, dynamic>>> fetchAllMyEntries({
+    required int userId,
+  }) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        '$kMindMetricApiBaseUrl/api/MyEntries/GetAllMyEntries',
+        queryParameters: <String, dynamic>{'userId': userId},
+        options: Options(headers: <String, dynamic>{'accept': '*/*'}),
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load my entries');
+      }
+      return _parseShortlistedEntriesList(response.data);
+    } catch (e) {
+      throw Exception('Failed to load my entries: $e');
+    }
+  }
+
+  /// One shortlisted entry detail from [GET /api/MyEntries/Details].
+  Future<Map<String, dynamic>> fetchMyEntryDetails({
+    required int userId,
+    required String entryId,
+  }) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        '$kMindMetricApiBaseUrl/api/MyEntries/Details',
+        queryParameters: <String, dynamic>{
+          'userId': userId,
+          'entryId': entryId,
+        },
+        options: Options(headers: <String, dynamic>{'accept': '*/*'}),
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load entry details');
+      }
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return data;
+      }
+      if (data is Map) {
+        return Map<String, dynamic>.from(data);
+      }
+      throw Exception('Invalid entry details response');
+    } on DioException catch (e) {
+      final msg = e.response?.data?.toString() ?? e.message;
+      throw Exception('Failed to load entry details: $msg');
+    } catch (e) {
+      throw Exception('Failed to load entry details: $e');
     }
   }
 
@@ -147,24 +208,23 @@ int _parseNumericBody(dynamic data) {
   return 0;
 }
 
-int _parseShortlistedCount(dynamic data) {
+List<Map<String, dynamic>> _parseShortlistedEntriesList(dynamic data) {
   if (data is List) {
-    return data.length;
-  }
-  final n = _tryParseIntLoose(data);
-  if (n != null) {
-    return n;
+    return data
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
   }
   if (data is Map) {
     final m = Map<String, dynamic>.from(data);
     for (final k in ['data', 'Data', 'items', 'entries', 'results']) {
       final v = m[k];
       if (v is List) {
-        return v.length;
+        return _parseShortlistedEntriesList(v);
       }
     }
   }
-  return 0;
+  return [];
 }
 
 int? _tryParseIntLoose(dynamic v) {

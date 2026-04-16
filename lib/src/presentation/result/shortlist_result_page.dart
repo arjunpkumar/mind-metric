@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mind_metric/src/data/core/repository_provider.dart';
+import 'package:mind_metric/src/data/quiz/quiz_repository.dart';
 import 'package:mind_metric/src/presentation/dashboard/dashboard_page.dart';
+import 'package:mind_metric/src/presentation/quiz/creative_submission_page.dart';
 
 const Color _kBgStart = Color(0xFF08002E);
 const Color _kBgMid = Color(0xFF12006E);
@@ -9,13 +12,77 @@ const Color _kOrangeEnd = Color(0xFFEA580C);
 const Color _kCardBg = Color(0x12FFFFFF); // ~rgba(255,255,255,.07)
 const Color _kCardBorder = Color(0x1AFFFFFF); // ~rgba(255,255,255,.1)
 
-class ShortlistResultPage extends StatelessWidget {
-  const ShortlistResultPage({super.key});
+/// Arguments for [ShortlistResultPage] (from dashboard shortlisted tile).
+class ShortlistResultRouteArgs {
+  const ShortlistResultRouteArgs({
+    required this.userId,
+    required this.entryId,
+  });
+
+  final int userId;
+  final String entryId;
+}
+
+class ShortlistResultPage extends StatefulWidget {
+  const ShortlistResultPage({super.key, this.routeArgs});
 
   static const String route = '/shortlist-result';
 
+  final ShortlistResultRouteArgs? routeArgs;
+
+  @override
+  State<ShortlistResultPage> createState() => _ShortlistResultPageState();
+}
+
+class _ShortlistResultPageState extends State<ShortlistResultPage> {
+  bool _loading = true;
+  Object? _error;
+  MyEntryDetails? _details;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final args = widget.routeArgs;
+    if (args == null) {
+      setState(() {
+        _loading = false;
+        _error = 'Missing entry. Open this screen from a shortlisted entry.';
+        _details = null;
+      });
+      return;
+    }
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final d = await provideQuizRepository().getMyEntryDetails(
+        userId: args.userId,
+        entryId: args.entryId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _details = d;
+        _loading = false;
+        _error = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e;
+        _loading = false;
+        _details = null;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final details = _details;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -31,48 +98,89 @@ class ShortlistResultPage extends StatelessWidget {
             children: [
               _buildAppBar(context),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 40),
-                  child: Column(
-                    children: [
-                      const _HeroSection(),
-                      const SizedBox(height: 20),
-                      const _InfoBar(),
-                      const SizedBox(height: 14),
-                      const _ScoreCard(),
-                      const SizedBox(height: 14),
-                      const _SubmissionCard(),
-                      const SizedBox(height: 14),
-                      const _NextStepsCard(),
-                      const SizedBox(height: 14),
-                      const _AuditTrailCard(),
-                      const SizedBox(height: 24),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: _GradientButton(
-                          text: 'View All My Entries',
-                          onTap: () {
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              DashboardPage.route,
-                              (route) => false,
-                            );
-                          },
+                child: _loading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFF59E0B),
                         ),
-                      ),
-                      const SizedBox(height: 30),
-                      Text(
-                        'Pure skill. One prize. One winner.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.45),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                      )
+                    : _error != null
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _error.toString(),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.85),
+                                      fontSize: 14,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  TextButton(
+                                    onPressed: _load,
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : details == null
+                            ? const SizedBox.shrink()
+                            : SingleChildScrollView(
+                                padding: const EdgeInsets.only(bottom: 40),
+                                child: Column(
+                                  children: [
+                                    _HeroSection(details: details),
+                                    const SizedBox(height: 20),
+                                    const _InfoBar(),
+                                    const SizedBox(height: 14),
+                                    _ScoreCard(details: details),
+                                    const SizedBox(height: 14),
+                                    _SubmissionCard(details: details),
+                                    const SizedBox(height: 14),
+                                    const _NextStepsCard(),
+                                    const SizedBox(height: 14),
+                                    _AuditTrailCard(details: details),
+                                    const SizedBox(height: 24),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
+                                      child: _GradientButton(
+                                        text: 'View All My Entries',
+                                        onTap: () {
+                                          Navigator.of(context)
+                                              .pushNamedAndRemoveUntil(
+                                            DashboardPage.route,
+                                            (route) => false,
+                                            arguments: const DashboardRouteArgs(
+                                              initialTabIndex: 1,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(height: 30),
+                                    Text(
+                                      'Pure skill. One prize. One winner.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.45),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
               ),
             ],
           ),
@@ -96,11 +204,28 @@ class ShortlistResultPage extends StatelessWidget {
   }
 }
 
+int _wordCount(String text) {
+  final t = text.trim();
+  if (t.isEmpty) return 0;
+  return t.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+}
+
 class _HeroSection extends StatelessWidget {
-  const _HeroSection();
+  const _HeroSection({required this.details});
+
+  final MyEntryDetails details;
 
   @override
   Widget build(BuildContext context) {
+    final positive = details.isPositiveSentiment;
+    final badgeColor = positive ? const Color(0xFF4ADE80) : const Color(0xFFF59E0B);
+    final badgeBg = positive
+        ? const Color(0xFF4ADE80).withValues(alpha: 0.15)
+        : const Color(0xFFF59E0B).withValues(alpha: 0.15);
+    final badgeBorder = positive
+        ? const Color(0xFF4ADE80).withValues(alpha: 0.3)
+        : const Color(0xFFF59E0B).withValues(alpha: 0.35);
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -141,25 +266,33 @@ class _HeroSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
             decoration: BoxDecoration(
-              color: const Color(0xFF4ADE80).withValues(alpha: 0.15),
+              color: badgeBg,
               borderRadius: BorderRadius.circular(99),
-              border: Border.all(
-                color: const Color(0xFF4ADE80).withValues(alpha: 0.3),
-              ),
+              border: Border.all(color: badgeBorder),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('⭐ ', style: TextStyle(fontSize: 12)),
+                const Text('⭐ ', style: TextStyle(fontSize: 12)),
                 Text(
-                  'Shortlisted — Top 300',
+                  'Shortlisted · ${details.finalSentiment}',
                   style: TextStyle(
-                    color: Color(0xFF4ADE80),
+                    color: badgeColor,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            details.entryId,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
             ),
           ),
           const SizedBox(height: 10),
@@ -174,21 +307,30 @@ class _HeroSection extends StatelessWidget {
           const SizedBox(height: 8),
           Text.rich(
             TextSpan(
-              text: 'Your entry ranked in the ',
+              text: 'Lucid Engine AI™ scored your entry ',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14,
                 height: 1.65,
               ),
-              children: const [
+              children: [
                 TextSpan(
-                  text: 'top 0.01%',
-                  style: TextStyle(
+                  text: '${details.totalScore}/100',
+                  style: const TextStyle(
                     color: Color(0xFFF59E0B),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                TextSpan(text: ' of 387,241 entries.'),
+                TextSpan(
+                  text: positive
+                      ? ' — strong signal toward the shortlist.'
+                      : ' — see rubric for detail.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 14,
+                    height: 1.65,
+                  ),
+                ),
               ],
             ),
             textAlign: TextAlign.center,
@@ -238,11 +380,26 @@ class _InfoBar extends StatelessWidget {
   }
 }
 
+const List<Color> _kRubricColors = [
+  Color(0xFFF59E0B),
+  Color(0xFF7C3AED),
+  Color(0xFF3B82F6),
+  Color(0xFFEA580C),
+  Color(0xFF4ADE80),
+];
+
 class _ScoreCard extends StatelessWidget {
-  const _ScoreCard();
+  const _ScoreCard({required this.details});
+
+  final MyEntryDetails details;
 
   @override
   Widget build(BuildContext context) {
+    final total = details.totalScore.clamp(0, 100);
+    final progress = total / 100.0;
+    final positive = details.isPositiveSentiment;
+    final items = details.rubricItems;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -290,7 +447,7 @@ class _ScoreCard extends StatelessWidget {
                         width: 80,
                         height: 80,
                         child: CircularProgressIndicator(
-                          value: 0.94,
+                          value: progress,
                           strokeWidth: 8,
                           backgroundColor: Colors.white.withValues(alpha: 0.08),
                           color: const Color(0xFFF59E0B),
@@ -300,9 +457,9 @@ class _ScoreCard extends StatelessWidget {
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
-                            '94',
-                            style: TextStyle(
+                          Text(
+                            '$total',
+                            style: const TextStyle(
                               color: Color(0xFFF59E0B),
                               fontSize: 26,
                               fontWeight: FontWeight.w900,
@@ -325,42 +482,57 @@ class _ScoreCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Rank #47',
+                      Text(
+                        'Total score',
                         style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.45),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${details.totalScore} / 100',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 26,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'of 387,241 entries',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.45),
-                          fontSize: 12,
-                        ),
-                      ),
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4ADE80).withValues(alpha: 0.12),
+                          color: (positive
+                                  ? const Color(0xFF4ADE80)
+                                  : const Color(0xFFF59E0B))
+                              .withValues(alpha: 0.12),
                           border: Border.all(
-                            color: const Color(0xFF4ADE80)
+                            color: (positive
+                                    ? const Color(0xFF4ADE80)
+                                    : const Color(0xFFF59E0B))
                                 .withValues(alpha: 0.25),
                           ),
                           borderRadius: BorderRadius.circular(99),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('✅ ', style: TextStyle(fontSize: 11)),
                             Text(
-                              'Proceeding to judging',
+                              positive ? '✅ ' : 'ℹ️ ',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            Text(
+                              positive
+                                  ? 'Sentiment: POSITIVE'
+                                  : 'Sentiment: ${details.finalSentiment}',
                               style: TextStyle(
-                                color: Color(0xFF4ADE80),
+                                color: positive
+                                    ? const Color(0xFF4ADE80)
+                                    : const Color(0xFFF59E0B),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -391,32 +563,13 @@ class _ScoreCard extends StatelessWidget {
               collapsedIconColor: const Color(0xFFF59E0B),
               tilePadding: const EdgeInsets.symmetric(horizontal: 14),
               childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-              children: const [
-                _RubricRow(
-                  title: 'Relevance to the Prompt',
-                  score: 96,
-                  color: Color(0xFFF59E0B),
-                ),
-                _RubricRow(
-                  title: 'Creativity & Originality',
-                  score: 91,
-                  color: Color(0xFF7C3AED),
-                ),
-                _RubricRow(
-                  title: 'Clarity & Expression',
-                  score: 94,
-                  color: Color(0xFF3B82F6),
-                ),
-                _RubricRow(
-                  title: 'Metaphorical Resonance',
-                  score: 88,
-                  color: Color(0xFFEA580C),
-                ),
-                _RubricRow(
-                  title: 'Overall Impact',
-                  score: 93,
-                  color: Color(0xFF4ADE80),
-                ),
+              children: [
+                for (var i = 0; i < items.length; i++)
+                  _RubricRow(
+                    title: items[i].label,
+                    score: items[i].score,
+                    color: _kRubricColors[i % _kRubricColors.length],
+                  ),
               ],
             ),
           ),
@@ -439,6 +592,10 @@ class _RubricRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = score.clamp(0, 100);
+    final filled = s <= 0 ? 0 : s;
+    final empty = 100 - filled;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -446,12 +603,14 @@ class _RubricRow extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.75),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               Text(
@@ -473,16 +632,21 @@ class _RubricRow extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Expanded(
-                  flex: score,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(8),
+                if (filled > 0)
+                  Expanded(
+                    flex: filled,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-                ),
-                Expanded(flex: 100 - score, child: const SizedBox()),
+                if (empty > 0)
+                  Expanded(
+                    flex: empty,
+                    child: const SizedBox(),
+                  ),
               ],
             ),
           ),
@@ -493,10 +657,15 @@ class _RubricRow extends StatelessWidget {
 }
 
 class _SubmissionCard extends StatelessWidget {
-  const _SubmissionCard();
+  const _SubmissionCard({required this.details});
+
+  final MyEntryDetails details;
 
   @override
   Widget build(BuildContext context) {
+    final wc = _wordCount(details.userText);
+    final response = details.userText.isEmpty ? '—' : details.userText;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(14),
@@ -537,7 +706,7 @@ class _SubmissionCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '"In exactly 25 words, tell us why you should win this prize."',
+                  "\u201C${CreativeSubmissionPage.prompt}\u201D",
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.5),
                     fontSize: 14,
@@ -560,7 +729,7 @@ class _SubmissionCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '"This beautiful BMW X5 would carry my young family across the country discovering small towns, sharing stories and creating memories together for many years."',
+            '\u201C$response\u201D',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.8),
               fontSize: 14,
@@ -577,7 +746,7 @@ class _SubmissionCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                '✅ 25 words',
+                '✅ $wc words',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.35),
                   fontSize: 12,
@@ -585,7 +754,7 @@ class _SubmissionCard extends StatelessWidget {
               ),
               const SizedBox(width: 14),
               Text(
-                '🔒 Locked 14 Mar 2026',
+                'Entry ${details.entryId}',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.35),
                   fontSize: 12,
@@ -626,7 +795,8 @@ class _NextStepsCard extends StatelessWidget {
           const SizedBox(height: 12),
           const _StepItem(
             numText: '1',
-            text: '3 independent judges score your entry separately — no judge sees others\' scores',
+            text:
+                "3 independent judges score your entry separately — no judge sees others' scores",
           ),
           const _StepItem(
             numText: '2',
@@ -708,10 +878,14 @@ class _StepItem extends StatelessWidget {
 }
 
 class _AuditTrailCard extends StatelessWidget {
-  const _AuditTrailCard();
+  const _AuditTrailCard({required this.details});
+
+  final MyEntryDetails details;
 
   @override
   Widget build(BuildContext context) {
+    final audit = details.auditTrail;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -725,7 +899,7 @@ class _AuditTrailCard extends StatelessWidget {
         ),
         child: ExpansionTile(
           title: const Text(
-            '🛡 Immutable Audit Trail',
+            '🛡 Evaluation audit trail',
             style: TextStyle(
               color: Color(0xFFF59E0B),
               fontSize: 14,
@@ -736,75 +910,26 @@ class _AuditTrailCard extends StatelessWidget {
           collapsedIconColor: const Color(0xFFF59E0B),
           tilePadding: const EdgeInsets.symmetric(horizontal: 14),
           childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-          children: const [
-            _AuditRow(
-              event: 'Entry submitted & sealed',
-              ts: '14 Mar 2026 09:42:17 UTC · Hash: a3f8d2c1…',
-            ),
-            _AuditRow(
-              event: 'AI evaluation completed',
-              ts: '14 Mar 2026 09:43:02 UTC · Hash: b9e1c7d3…',
-            ),
-            _AuditRow(
-              event: 'Shortlist generated',
-              ts: '15 Mar 2026 00:00:00 UTC · Hash: d4f2a1e8…',
-            ),
-            _AuditRow(
-              event: 'Model: Lucid Engine AI™ v2.1.4',
-              ts: 'Deterministic seed: 2026-Q1',
-              isLast: true,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AuditRow extends StatelessWidget {
-  const _AuditRow({
-    required this.event,
-    required this.ts,
-    this.isLast = false,
-  });
-
-  final String event;
-  final String ts;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: isLast
-          ? null
-          : BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.07),
+          children: [
+            if (audit != null && audit.isNotEmpty)
+              SelectableText(
+                audit,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.65),
+                  fontSize: 12,
+                  height: 1.55,
+                ),
+              )
+            else
+              Text(
+                'No audit narrative returned for this entry.',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 13,
                 ),
               ),
-            ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            event,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            ts,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.35),
-              fontSize: 11,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

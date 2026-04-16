@@ -46,7 +46,11 @@ final Map<String, Widget Function(BuildContext context)> routes = {
           );
         },
       ),
-  ShortlistResultPage.route: (_) => const ShortlistResultPage(),
+  ShortlistResultPage.route: (context) {
+    final raw = ModalRoute.of(context)?.settings.arguments;
+    final args = raw is ShortlistResultRouteArgs ? raw : null;
+    return ShortlistResultPage(routeArgs: args);
+  },
 };
 
 Route<dynamic>? generatedRoutes(RouteSettings settings) {
@@ -92,6 +96,7 @@ Route<dynamic>? generatedRoutes(RouteSettings settings) {
         builder: (_) => DashboardPage(
           userName: a.userName,
           shortlistedEntryRef: a.shortlistedEntryRef,
+          initialTabIndex: a.initialTabIndex,
         ),
       );
   }

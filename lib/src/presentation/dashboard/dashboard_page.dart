@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mind_metric/src/data/core/repository_provider.dart';
+import 'package:mind_metric/src/data/quiz/quiz_repository.dart';
 import 'package:mind_metric/src/presentation/payment/payment_page.dart';
 // import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
 import 'package:mind_metric/src/presentation/result/shortlist_result_page.dart';
@@ -32,14 +33,106 @@ final DateTime _kCompetitionEndUtc = DateTime.utc(2026, 7, 2, 14, 22, 26);
 /// Total qualification entry slots per user (matches API / product rules).
 const _kEntriesMax = 10;
 
+int _myEntryListWordCount(String text) {
+  final t = text.trim();
+  if (t.isEmpty) return 0;
+  return t.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+}
+
+String _formatMyEntryListDate(String? iso) {
+  if (iso == null || iso.isEmpty) return '—';
+  final d = DateTime.tryParse(iso);
+  if (d == null) {
+    return iso;
+  }
+  const months = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '${d.day} ${months[d.month - 1]} ${d.year}';
+}
+
+String _myEntryListSubtitle(MyEntryListItem e) {
+  final wc = _myEntryListWordCount(e.userText);
+  final preview = e.userText.trim();
+  if (preview.isEmpty) {
+    return '$wc words submitted';
+  }
+  const max = 72;
+  final shortened =
+      preview.length <= max ? preview : '${preview.substring(0, max)}…';
+  return '$wc words · $shortened';
+}
+
+class _MyEntryStatusLook {
+  const _MyEntryStatusLook({
+    required this.label,
+    required this.statusColor,
+    required this.statusBgColor,
+    required this.cardHighlight,
+  });
+
+  final String label;
+  final Color statusColor;
+  final Color statusBgColor;
+  final bool cardHighlight;
+
+  factory _MyEntryStatusLook.fromApi(String? status) {
+    final s = status?.trim().toLowerCase() ?? '';
+    if (s.contains('shortlist')) {
+      final raw = status?.trim();
+      final t = raw != null && raw.isNotEmpty ? raw : 'Shortlisted';
+      return _MyEntryStatusLook(
+        label: '⭐ $t',
+        statusColor: _kOrange,
+        statusBgColor: _kOrange.withValues(alpha: 0.15),
+        cardHighlight: true,
+      );
+    }
+    if (s.contains('fail')) {
+      final raw = status?.trim();
+      final t = raw != null && raw.isNotEmpty ? raw : 'Failed';
+      return _MyEntryStatusLook(
+        label: t,
+        statusColor: Colors.redAccent,
+        statusBgColor: Colors.redAccent.withValues(alpha: 0.1),
+        cardHighlight: false,
+      );
+    }
+    final labelText = (status != null && status.trim().isNotEmpty)
+        ? status.trim()
+        : 'Submitted';
+    return _MyEntryStatusLook(
+      label: '✓ $labelText',
+      statusColor: Colors.greenAccent,
+      statusBgColor: Colors.greenAccent.withValues(alpha: 0.1),
+      cardHighlight: false,
+    );
+  }
+}
+
 class DashboardRouteArgs {
   const DashboardRouteArgs({
     this.userName = 'Jordan Davies',
     this.shortlistedEntryRef = 'TBSC-2026-004521',
+    this.initialTabIndex = 0,
   });
 
   final String userName;
   final String shortlistedEntryRef;
+
+  /// Bottom-nav tab: `0` home, `1` my entries, `2` account.
+  final int initialTabIndex;
 }
 
 /// Main competition dashboard with bottom navigation (matches product mock).
@@ -48,12 +141,14 @@ class DashboardPage extends StatefulWidget {
     super.key,
     this.userName = 'Jordan Davies',
     this.shortlistedEntryRef = 'TBSC-2026-004521',
+    this.initialTabIndex = 0,
   });
 
   static const route = '/dashboard';
 
   final String userName;
   final String shortlistedEntryRef;
+  final int initialTabIndex;
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -69,11 +164,22 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// From [GET /api/MyEntries/Shortlisted] (array length). Defaults to 0 until loaded or if unavailable.
   int _shortlistedCount = 0;
+
+  /// Rows from [GET /api/MyEntries/Shortlisted] for the dashboard list.
+  List<ShortlistedListEntry> _shortlistedEntries = [];
   bool _entriesLoading = true;
+
+  /// Same [userId] used for quiz / MyEntries APIs (for entry detail navigation).
+  int? _quizUserId;
+
+  /// From [GET /api/MyEntries/GetAllMyEntries].
+  List<MyEntryListItem> _myEntriesList = [];
 
   @override
   void initState() {
     super.initState();
+    final tab = widget.initialTabIndex;
+    _tabIndex = tab < 0 ? 0 : (tab > 2 ? 2 : tab);
     _updateRemaining();
     _tick = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
@@ -90,12 +196,16 @@ class _DashboardPageState extends State<DashboardPage> {
         _entriesLoading = false;
         _entriesUsed = null;
         _shortlistedCount = 0;
+        _shortlistedEntries = [];
+        _quizUserId = null;
+        _myEntriesList = [];
       });
       return;
     }
     final repo = provideQuizRepository();
     int? used;
-    var shortlist = 0;
+    var shortlistEntries = <ShortlistedListEntry>[];
+    var myEntries = <MyEntryListItem>[];
     try {
       final c = await repo.getTotalAttempts(userId: userId);
       used = c < 0 ? 0 : c;
@@ -103,16 +213,23 @@ class _DashboardPageState extends State<DashboardPage> {
       used = null;
     }
     try {
-      final s = await repo.getShortlistedCount(userId: userId);
-      shortlist = s < 0 ? 0 : s;
+      shortlistEntries = await repo.getShortlistedEntries(userId: userId);
     } catch (_) {
-      shortlist = 0;
+      shortlistEntries = [];
+    }
+    try {
+      myEntries = await repo.getAllMyEntries(userId: userId);
+    } catch (_) {
+      myEntries = [];
     }
     if (!mounted) return;
     setState(() {
       _entriesUsed = used;
-      _shortlistedCount = shortlist;
+      _shortlistedEntries = shortlistEntries;
+      _shortlistedCount = shortlistEntries.length;
       _entriesLoading = false;
+      _quizUserId = userId;
+      _myEntriesList = myEntries;
     });
   }
 
@@ -151,17 +268,20 @@ class _DashboardPageState extends State<DashboardPage> {
                 children: [
                   _DashboardHomeTab(
                     userName: widget.userName,
-                    shortlistedEntryRef: widget.shortlistedEntryRef,
                     remaining: _remaining,
                     entriesUsed: _entriesUsed,
                     shortlistedCount: _shortlistedCount,
+                    shortlistedEntries: _shortlistedEntries,
                     entriesLoading: _entriesLoading,
                     entriesMax: _kEntriesMax,
+                    quizUserId: _quizUserId,
                   ),
                   _MyEntriesTab(
                     entriesUsed: _entriesUsed,
                     entriesLoading: _entriesLoading,
                     entriesMax: _kEntriesMax,
+                    myEntries: _myEntriesList,
+                    quizUserId: _quizUserId,
                   ),
                   const _AccountTab(),
                 ],
@@ -194,21 +314,23 @@ class _DashboardPageState extends State<DashboardPage> {
 class _DashboardHomeTab extends StatelessWidget {
   const _DashboardHomeTab({
     required this.userName,
-    required this.shortlistedEntryRef,
     required this.remaining,
     required this.entriesUsed,
     required this.shortlistedCount,
+    required this.shortlistedEntries,
     required this.entriesLoading,
     required this.entriesMax,
+    required this.quizUserId,
   });
 
   final String userName;
-  final String shortlistedEntryRef;
   final Duration remaining;
   final int? entriesUsed;
   final int shortlistedCount;
+  final List<ShortlistedListEntry> shortlistedEntries;
   final bool entriesLoading;
   final int entriesMax;
+  final int? quizUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -275,7 +397,11 @@ class _DashboardHomeTab extends StatelessWidget {
             //   },
             // ),
             // const SizedBox(height: 14),
-            _ShortlistedCard(entryRef: shortlistedEntryRef),
+            _ShortlistedSection(
+              entries: shortlistedEntries,
+              loading: entriesLoading,
+              quizUserId: quizUserId,
+            ),
             const SizedBox(height: 18),
             Row(
               children: [
@@ -499,18 +625,127 @@ class _IncompleteEntryCard extends StatelessWidget {
   }
 }
 
-class _ShortlistedCard extends StatelessWidget {
-  const _ShortlistedCard({required this.entryRef});
+/// Built only from [GET /api/MyEntries/Shortlisted].
+class _ShortlistedSection extends StatelessWidget {
+  const _ShortlistedSection({
+    required this.entries,
+    required this.loading,
+    required this.quizUserId,
+  });
 
-  final String entryRef;
+  final List<ShortlistedListEntry> entries;
+  final bool loading;
+  final int? quizUserId;
 
   @override
   Widget build(BuildContext context) {
+    if (loading && entries.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: _kCardBg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _kShortlistCardBorder.withValues(alpha: 0.9),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              "You're Shortlisted!",
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const LinearProgressIndicator(
+              minHeight: 3,
+              color: _kOrange,
+              backgroundColor: Color(0xFF1A2049),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (entries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          "You're Shortlisted!",
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.95),
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${entries.length} ${entries.length == 1 ? 'entry' : 'entries'}',
+          style: TextStyle(
+            color: _kMuted.withValues(alpha: 0.85),
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ...entries.map(
+          (e) => Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _ShortlistedEntryTile(
+              entry: e,
+              quizUserId: quizUserId,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ShortlistedEntryTile extends StatelessWidget {
+  const _ShortlistedEntryTile({
+    required this.entry,
+    required this.quizUserId,
+  });
+
+  final ShortlistedListEntry entry;
+  final int? quizUserId;
+
+  @override
+  Widget build(BuildContext context) {
+    final created = entry.createdAt;
+    final subtitle = created != null && created.isNotEmpty
+        ? 'Entry #${entry.entryId} · Shortlisted $created'
+        : 'Entry #${entry.entryId}';
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Navigator.of(context).pushNamed(ShortlistResultPage.route);
+          final uid = quizUserId;
+          if (uid == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Sign in to view entry details.'),
+              ),
+            );
+            return;
+          }
+          Navigator.of(context).pushNamed(
+            ShortlistResultPage.route,
+            arguments: ShortlistResultRouteArgs(
+              userId: uid,
+              entryId: entry.entryId,
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(14),
         child: Container(
@@ -544,16 +779,16 @@ class _ShortlistedCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "You're Shortlisted!",
+                      'Shortlisted entry',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Entry #$entryRef · Top 0.01%',
+                      subtitle,
                       style: TextStyle(
                         color: _kMuted.withValues(alpha: 0.92),
                         fontSize: 12,
@@ -677,120 +912,151 @@ class _MyEntriesTab extends StatelessWidget {
     required this.entriesUsed,
     required this.entriesLoading,
     required this.entriesMax,
+    required this.myEntries,
+    required this.quizUserId,
   });
 
   final int? entriesUsed;
   final bool entriesLoading;
   final int entriesMax;
+  final List<MyEntryListItem> myEntries;
+  final int? quizUserId;
 
   @override
   Widget build(BuildContext context) {
+    final listChildren = <Widget>[
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'My Entries',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Track your success',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border:
+                  Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            child: Text.rich(
+              TextSpan(
+                text: entriesLoading
+                    ? '… '
+                    : entriesUsed == null
+                        ? '— '
+                        : '$entriesUsed ',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+                children: [
+                  TextSpan(
+                    text: '/ $entriesMax',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 24),
+    ];
+
+    if (entriesLoading && myEntries.isEmpty) {
+      listChildren.addAll([
+        const LinearProgressIndicator(
+          minHeight: 3,
+          color: _kOrange,
+          backgroundColor: Color(0xFF1A2049),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          'Loading entries…',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.45),
+            fontSize: 13,
+          ),
+        ),
+      ]);
+    } else if (myEntries.isEmpty) {
+      listChildren.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 24),
+          child: Text(
+            entriesUsed == null
+                ? 'Sign in to see your competition entries.'
+                : 'No entries yet. Complete payment and the quiz to create your first entry.',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 14,
+              height: 1.45,
+            ),
+          ),
+        ),
+      );
+    } else {
+      for (final e in myEntries) {
+        final look = _MyEntryStatusLook.fromApi(e.status);
+        final uid = quizUserId;
+        listChildren.add(
+          _EntryRow(
+            status: look.label,
+            date: _formatMyEntryListDate(e.createdAt),
+            refNumber: e.entryId,
+            subtitle: _myEntryListSubtitle(e),
+            statusColor: look.statusColor,
+            statusBgColor: look.statusBgColor,
+            isShortlisted: look.cardHighlight,
+            onTap: uid == null
+                ? null
+                : () {
+                    Navigator.of(context).pushNamed(
+                      ShortlistResultPage.route,
+                      arguments: ShortlistResultRouteArgs(
+                        userId: uid,
+                        entryId: e.entryId,
+                      ),
+                    );
+                  },
+          ),
+        );
+      }
+    }
+
     return SafeArea(
       bottom: false,
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'My Entries',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Track your success',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.4),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                ),
-                child: Text.rich(
-                  TextSpan(
-                    text: entriesLoading
-                        ? '… '
-                        : entriesUsed == null
-                            ? '— '
-                            : '$entriesUsed ',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: '/ $entriesMax',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _EntryRow(
-            status: '⭐ Shortlisted',
-            date: '14 Mar 2026',
-            refNumber: 'TBSC-2026-004521',
-            subtitle: '25 words submitted · Top 0.01%',
-            statusColor: _kOrange,
-            statusBgColor: _kOrange.withValues(alpha: 0.15),
-            isShortlisted: true,
-          ),
-          _EntryRow(
-            status: '✓ Submitted',
-            date: '12 Mar 2026',
-            refNumber: 'TBSC-2026-004486',
-            subtitle: '25 words submitted',
-            statusColor: Colors.greenAccent,
-            statusBgColor: Colors.greenAccent.withValues(alpha: 0.1),
-          ),
-          Opacity(
-            opacity: 0.75,
-            child: _EntryRow(
-              status: '✗ Quiz Failed',
-              date: '10 Mar 2026',
-              refNumber: 'TBSC-2026-004412',
-              subtitle: 'Did not pass verification',
-              statusColor: Colors.redAccent,
-              statusBgColor: Colors.redAccent.withValues(alpha: 0.1),
-            ),
-          ),
-          _EntryRow(
-            status: '✓ Submitted',
-            date: '9 Mar 2026',
-            refNumber: 'TBSC-2026-004390',
-            subtitle: '25 words submitted',
-            statusColor: Colors.greenAccent,
-            statusBgColor: Colors.greenAccent.withValues(alpha: 0.1),
-          ),
-        ],
+        children: listChildren,
       ),
     );
   }
@@ -805,6 +1071,7 @@ class _EntryRow extends StatelessWidget {
     required this.statusColor,
     required this.statusBgColor,
     this.isShortlisted = false,
+    this.onTap,
   });
 
   final String status;
@@ -814,11 +1081,11 @@ class _EntryRow extends StatelessWidget {
   final Color statusColor;
   final Color statusBgColor;
   final bool isShortlisted;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+    final card = Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isShortlisted
@@ -910,6 +1177,21 @@ class _EntryRow extends StatelessWidget {
         ],
       ),
     );
+
+    final padded = Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: onTap != null
+          ? Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: onTap,
+                child: card,
+              ),
+            )
+          : card,
+    );
+    return padded;
   }
 }
 
