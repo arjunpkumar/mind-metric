@@ -275,6 +275,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     entriesLoading: _entriesLoading,
                     entriesMax: _kEntriesMax,
                     quizUserId: _quizUserId,
+                    onRefreshStats: _loadEntryStats,
                   ),
                   _MyEntriesTab(
                     entriesUsed: _entriesUsed,
@@ -282,6 +283,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     entriesMax: _kEntriesMax,
                     myEntries: _myEntriesList,
                     quizUserId: _quizUserId,
+                    onRefreshStats: _loadEntryStats,
                   ),
                   const _AccountTab(),
                 ],
@@ -321,6 +323,7 @@ class _DashboardHomeTab extends StatelessWidget {
     required this.entriesLoading,
     required this.entriesMax,
     required this.quizUserId,
+    required this.onRefreshStats,
   });
 
   final String userName;
@@ -331,6 +334,7 @@ class _DashboardHomeTab extends StatelessWidget {
   final bool entriesLoading;
   final int entriesMax;
   final int? quizUserId;
+  final Future<void> Function() onRefreshStats;
 
   @override
   Widget build(BuildContext context) {
@@ -345,18 +349,24 @@ class _DashboardHomeTab extends StatelessWidget {
 
     return SafeArea(
       bottom: false,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: CachedNetworkImage(
-                      imageUrl: _kLogoUrl,
+      child: RefreshIndicator(
+        color: _kOrange,
+        backgroundColor: _kCardBg,
+        displacement: 48,
+        onRefresh: onRefreshStats,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: CachedNetworkImage(
+                        imageUrl: _kLogoUrl,
                       height: 32,
                       fit: BoxFit.contain,
                       alignment: Alignment.centerLeft,
@@ -536,6 +546,7 @@ class _DashboardHomeTab extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
@@ -914,6 +925,7 @@ class _MyEntriesTab extends StatelessWidget {
     required this.entriesMax,
     required this.myEntries,
     required this.quizUserId,
+    required this.onRefreshStats,
   });
 
   final int? entriesUsed;
@@ -921,6 +933,7 @@ class _MyEntriesTab extends StatelessWidget {
   final int entriesMax;
   final List<MyEntryListItem> myEntries;
   final int? quizUserId;
+  final Future<void> Function() onRefreshStats;
 
   @override
   Widget build(BuildContext context) {
@@ -1054,9 +1067,16 @@ class _MyEntriesTab extends StatelessWidget {
 
     return SafeArea(
       bottom: false,
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        children: listChildren,
+      child: RefreshIndicator(
+        color: _kOrange,
+        backgroundColor: _kCardBg,
+        displacement: 48,
+        onRefresh: onRefreshStats,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          children: listChildren,
+        ),
       ),
     );
   }
