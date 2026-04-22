@@ -1,10 +1,5 @@
 #!/bin/bash
 
-#AWS_ACCESS_KEY_DEV="AKIAWWS7NHNAZPY6ULMN"
-#AWS_SECRET_KEY_DEV="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"
-#AWS_REGION_DEV="ap-south-1"
-#S3_BUCKET_DEV="ahoy-develop"
-
 workDir=$(pwd)
 
 # Read the user input
