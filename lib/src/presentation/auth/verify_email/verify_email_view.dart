@@ -6,7 +6,7 @@ import 'package:mind_metric/src/application/bloc/account/account_bloc.dart';
 import 'package:mind_metric/src/application/bloc/auth/verify_email/verify_email_bloc.dart';
 import 'package:mind_metric/src/application/bloc/auth/verify_email/verify_email_event.dart';
 import 'package:mind_metric/src/application/bloc/auth/verify_email/verify_email_state.dart';
-import 'package:mind_metric/src/presentation/entry_eligibility/entry_eligibility_page.dart';
+import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 
 const Color _kBg = Color(0xFF101438);
 const Color _kBoxBg = Color(0xFF151B40);
@@ -54,19 +54,16 @@ class VerifyEmailView extends StatelessWidget {
           listenWhen: (p, c) => p.status != c.status,
           listener: (context, state) {
             if (state.status == VerifyEmailStatus.success) {
-              final acc = accountBloc;
-              if (acc != null) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute<void>(
-                    builder: (_) => BlocProvider<AccountBloc>.value(
-                      value: acc,
-                      child: const EntryEligibilityPage(),
-                    ),
-                  ),
-                );
-              } else {
-                Navigator.of(context).pop(true);
-              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Account created successfully.'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                LoginPage.route,
+                (_) => false,
+              );
             } else if (state.status == VerifyEmailStatus.failure &&
                 state.errorMessage != null &&
                 state.otpCode.length == 6) {
@@ -243,7 +240,7 @@ class VerifyEmailView extends StatelessWidget {
                                 : null,
                             child: Text(
                               state.resendCooldownSeconds > 0
-                                  ? 'Resend Code (${state.resendCooldownSeconds}s)'
+                                  ? 'Code resent (${state.resendCooldownSeconds}s)'
                                   : 'Resend Code',
                               style: TextStyle(
                                 color: state.canResend

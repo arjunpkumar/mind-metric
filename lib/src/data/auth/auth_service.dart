@@ -1,6 +1,9 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
+
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:mind_metric/config.dart';
 import 'package:mind_metric/generated/l10n.dart';
 import 'package:mind_metric/src/core/app.dart';
@@ -8,7 +11,6 @@ import 'package:mind_metric/src/core/app_constants.dart';
 import 'package:mind_metric/src/data/database/core/app_database.dart';
 import 'package:mind_metric/src/presentation/web_view/web_view_page.dart';
 import 'package:mind_metric/src/utils/string_utils.dart';
-import 'package:http/http.dart' as http;
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -183,6 +185,114 @@ class AuthService {
       alternateSuccessUrl: APIEndpoints.logoutSessionUrl,
       isAuthTokenNeeded: false,
     );
+  }
+
+  Future<Map<String, dynamic>> loginWithDio({
+    required String email,
+    required String password,
+  }) async {
+    // Treat 4xx as normal responses so we can read API `message` / `succeeded`
+    // (Dio’s default validateStatus throws on 400 before we parse the body).
+    final dio = Dio(
+      BaseOptions(
+        validateStatus: (status) => status != null && status < 500,
+      ),
+    );
+    try {
+      final response = await dio.post<dynamic>(
+        '$kMindMetricApiBaseUrl/api/Auth/Login',
+        data: <String, dynamic>{
+          'email': email,
+          'password': password,
+        },
+        options: Options(
+          headers: <String, dynamic>{
+            'Content-Type': 'application/json',
+            'accept': '*/*',
+          },
+        ),
+      );
+
+      final code = response.statusCode;
+      if (code == null || code < 200 || code >= 300) {
+        throw Exception(_loginErrorMessageFromResponse(response.data) ??
+            'Login failed (${code ?? 'unknown'})');
+      }
+
+      if (response.data is! Map) {
+        throw Exception('Login failed: unexpected response shape');
+      }
+
+      final responseData =
+          Map<String, dynamic>.from(response.data as Map<dynamic, dynamic>);
+
+      final succeeded = responseData['succeeded'] == true ||
+          responseData['succeeded'] == 'true' ||
+          responseData['success'] == true ||
+          responseData['Success'] == true;
+
+      if (!succeeded) {
+        throw Exception(
+          responseData['message']?.toString() ??
+              responseData['Message']?.toString() ??
+              'Login failed',
+        );
+      }
+
+      final merged = <String, dynamic>{};
+
+      final inner =
+          responseData['data'] ?? responseData['Data'] ?? responseData['result'];
+      if (inner is Map) {
+        merged.addAll(Map<String, dynamic>.from(inner));
+      }
+
+      const rootKeysToMerge = [
+        'userId',
+        'UserId',
+        'user_id',
+        'UserID',
+        'userid',
+        'user',
+        'User',
+        'userDto',
+        'UserDto',
+      ];
+      for (final key in rootKeysToMerge) {
+        if (responseData.containsKey(key) && !merged.containsKey(key)) {
+          merged[key] = responseData[key];
+        }
+      }
+
+      return merged;
+    } on DioException catch (e) {
+      throw Exception(
+        _loginErrorMessageFromResponse(e.response?.data) ??
+            e.message ??
+            'Login failed: network error',
+      );
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Login failed: $e');
+    }
+  }
+
+  String? _loginErrorMessageFromResponse(dynamic data) {
+    if (data is Map) {
+      final m = Map<String, dynamic>.from(data);
+      final msg = m['message'] ?? m['Message'] ?? m['title'] ?? m['detail'];
+      if (msg != null && msg.toString().trim().isNotEmpty) {
+        return msg.toString();
+      }
+      final errors = m['errors'];
+      if (errors is Map && errors.isNotEmpty) {
+        final first = errors.values.first;
+        if (first is List && first.isNotEmpty) {
+          return first.first.toString();
+        }
+      }
+    }
+    return null;
   }
 }
 

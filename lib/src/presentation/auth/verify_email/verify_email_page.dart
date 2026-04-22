@@ -33,7 +33,7 @@ class VerifyEmailPage extends StatelessWidget {
   }
 }
 
-/// Pass from create-account flow so OTP success can open [EntryEligibilityPage] with the same bloc.
+/// Pass from create-account flow so OTP success can navigate to [LoginPage].
 class VerifyEmailRouteArgs {
   const VerifyEmailRouteArgs({
     required this.email,

@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mind_metric/src/presentation/account/account_page.dart';
-import 'package:mind_metric/src/presentation/home/home_page.dart';
-import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
+import 'package:mind_metric/src/data/core/repository_provider.dart';
+import 'package:mind_metric/src/data/quiz/quiz_repository.dart';
+import 'package:mind_metric/src/presentation/payment/payment_page.dart';
+// import 'package:mind_metric/src/presentation/quiz/qualification_quiz_page.dart';
+import 'package:mind_metric/src/presentation/result/shortlist_result_page.dart';
 
 const Color _kBg = Color(0xFF0B0B2E);
 const Color _kCardBg = Color(0xFF12143A);
@@ -28,18 +30,109 @@ const String _kLogoUrl =
 /// Fixed end time for the competition countdown (demo).
 final DateTime _kCompetitionEndUtc = DateTime.utc(2026, 7, 2, 14, 22, 26);
 
-const _kEntriesUsed = 4;
+/// Total qualification entry slots per user (matches API / product rules).
 const _kEntriesMax = 10;
-const _kShortlistedStat = 1;
+
+int _myEntryListWordCount(String text) {
+  final t = text.trim();
+  if (t.isEmpty) return 0;
+  return t.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+}
+
+String _formatMyEntryListDate(String? iso) {
+  if (iso == null || iso.isEmpty) return '—';
+  final d = DateTime.tryParse(iso);
+  if (d == null) {
+    return iso;
+  }
+  const months = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '${d.day} ${months[d.month - 1]} ${d.year}';
+}
+
+String _myEntryListSubtitle(MyEntryListItem e) {
+  final wc = _myEntryListWordCount(e.userText);
+  final preview = e.userText.trim();
+  if (preview.isEmpty) {
+    return '$wc words submitted';
+  }
+  const max = 72;
+  final shortened =
+      preview.length <= max ? preview : '${preview.substring(0, max)}…';
+  return '$wc words · $shortened';
+}
+
+class _MyEntryStatusLook {
+  const _MyEntryStatusLook({
+    required this.label,
+    required this.statusColor,
+    required this.statusBgColor,
+    required this.cardHighlight,
+  });
+
+  final String label;
+  final Color statusColor;
+  final Color statusBgColor;
+  final bool cardHighlight;
+
+  factory _MyEntryStatusLook.fromApi(String? status) {
+    final s = status?.trim().toLowerCase() ?? '';
+    if (s.contains('shortlist')) {
+      final raw = status?.trim();
+      final t = raw != null && raw.isNotEmpty ? raw : 'Shortlisted';
+      return _MyEntryStatusLook(
+        label: '⭐ $t',
+        statusColor: _kOrange,
+        statusBgColor: _kOrange.withValues(alpha: 0.15),
+        cardHighlight: true,
+      );
+    }
+    if (s.contains('fail')) {
+      final raw = status?.trim();
+      final t = raw != null && raw.isNotEmpty ? raw : 'Failed';
+      return _MyEntryStatusLook(
+        label: t,
+        statusColor: Colors.redAccent,
+        statusBgColor: Colors.redAccent.withValues(alpha: 0.1),
+        cardHighlight: false,
+      );
+    }
+    final labelText = (status != null && status.trim().isNotEmpty)
+        ? status.trim()
+        : 'Submitted';
+    return _MyEntryStatusLook(
+      label: '✓ $labelText',
+      statusColor: Colors.greenAccent,
+      statusBgColor: Colors.greenAccent.withValues(alpha: 0.1),
+      cardHighlight: false,
+    );
+  }
+}
 
 class DashboardRouteArgs {
   const DashboardRouteArgs({
     this.userName = 'Jordan Davies',
     this.shortlistedEntryRef = 'TBSC-2026-004521',
+    this.initialTabIndex = 0,
   });
 
   final String userName;
   final String shortlistedEntryRef;
+
+  /// Bottom-nav tab: `0` home, `1` my entries, `2` account.
+  final int initialTabIndex;
 }
 
 /// Main competition dashboard with bottom navigation (matches product mock).
@@ -48,12 +141,14 @@ class DashboardPage extends StatefulWidget {
     super.key,
     this.userName = 'Jordan Davies',
     this.shortlistedEntryRef = 'TBSC-2026-004521',
+    this.initialTabIndex = 0,
   });
 
   static const route = '/dashboard';
 
   final String userName;
   final String shortlistedEntryRef;
+  final int initialTabIndex;
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -64,13 +159,77 @@ class _DashboardPageState extends State<DashboardPage> {
   Timer? _tick;
   Duration _remaining = Duration.zero;
 
+  /// From [GET /api/Question/TotalAttempts]. `null` if still loading or unavailable.
+  int? _entriesUsed;
+
+  /// From [GET /api/MyEntries/Shortlisted] (array length). Defaults to 0 until loaded or if unavailable.
+  int _shortlistedCount = 0;
+
+  /// Rows from [GET /api/MyEntries/Shortlisted] for the dashboard list.
+  List<ShortlistedListEntry> _shortlistedEntries = [];
+  bool _entriesLoading = true;
+
+  /// Same [userId] used for quiz / MyEntries APIs (for entry detail navigation).
+  int? _quizUserId;
+
+  /// From [GET /api/MyEntries/GetAllMyEntries].
+  List<MyEntryListItem> _myEntriesList = [];
+
   @override
   void initState() {
     super.initState();
+    final tab = widget.initialTabIndex;
+    _tabIndex = tab < 0 ? 0 : (tab > 2 ? 2 : tab);
     _updateRemaining();
     _tick = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       setState(_updateRemaining);
+    });
+    _loadEntryStats();
+  }
+
+  Future<void> _loadEntryStats() async {
+    final userId = await provideAuthRepository().resolveQuizSubmitUserId();
+    if (!mounted) return;
+    if (userId == null) {
+      setState(() {
+        _entriesLoading = false;
+        _entriesUsed = null;
+        _shortlistedCount = 0;
+        _shortlistedEntries = [];
+        _quizUserId = null;
+        _myEntriesList = [];
+      });
+      return;
+    }
+    final repo = provideQuizRepository();
+    int? used;
+    var shortlistEntries = <ShortlistedListEntry>[];
+    var myEntries = <MyEntryListItem>[];
+    try {
+      final c = await repo.getTotalAttempts(userId: userId);
+      used = c < 0 ? 0 : c;
+    } catch (_) {
+      used = null;
+    }
+    try {
+      shortlistEntries = await repo.getShortlistedEntries(userId: userId);
+    } catch (_) {
+      shortlistEntries = [];
+    }
+    try {
+      myEntries = await repo.getAllMyEntries(userId: userId);
+    } catch (_) {
+      myEntries = [];
+    }
+    if (!mounted) return;
+    setState(() {
+      _entriesUsed = used;
+      _shortlistedEntries = shortlistEntries;
+      _shortlistedCount = shortlistEntries.length;
+      _entriesLoading = false;
+      _quizUserId = userId;
+      _myEntriesList = myEntries;
     });
   }
 
@@ -109,11 +268,24 @@ class _DashboardPageState extends State<DashboardPage> {
                 children: [
                   _DashboardHomeTab(
                     userName: widget.userName,
-                    shortlistedEntryRef: widget.shortlistedEntryRef,
                     remaining: _remaining,
+                    entriesUsed: _entriesUsed,
+                    shortlistedCount: _shortlistedCount,
+                    shortlistedEntries: _shortlistedEntries,
+                    entriesLoading: _entriesLoading,
+                    entriesMax: _kEntriesMax,
+                    quizUserId: _quizUserId,
+                    onRefreshStats: _loadEntryStats,
                   ),
-                  const _MyEntriesTab(),
-                  const _AccountStubTab(),
+                  _MyEntriesTab(
+                    entriesUsed: _entriesUsed,
+                    entriesLoading: _entriesLoading,
+                    entriesMax: _kEntriesMax,
+                    myEntries: _myEntriesList,
+                    quizUserId: _quizUserId,
+                    onRefreshStats: _loadEntryStats,
+                  ),
+                  const _AccountTab(),
                 ],
               ),
             ),
@@ -144,13 +316,25 @@ class _DashboardPageState extends State<DashboardPage> {
 class _DashboardHomeTab extends StatelessWidget {
   const _DashboardHomeTab({
     required this.userName,
-    required this.shortlistedEntryRef,
     required this.remaining,
+    required this.entriesUsed,
+    required this.shortlistedCount,
+    required this.shortlistedEntries,
+    required this.entriesLoading,
+    required this.entriesMax,
+    required this.quizUserId,
+    required this.onRefreshStats,
   });
 
   final String userName;
-  final String shortlistedEntryRef;
   final Duration remaining;
+  final int? entriesUsed;
+  final int shortlistedCount;
+  final List<ShortlistedListEntry> shortlistedEntries;
+  final bool entriesLoading;
+  final int entriesMax;
+  final int? quizUserId;
+  final Future<void> Function() onRefreshStats;
 
   @override
   Widget build(BuildContext context) {
@@ -158,23 +342,31 @@ class _DashboardHomeTab extends StatelessWidget {
     final hours = remaining.inHours.remainder(24);
     final mins = remaining.inMinutes.remainder(60);
     final secs = remaining.inSeconds.remainder(60);
-    final slotsLeft = _kEntriesMax - _kEntriesUsed;
+    final used = entriesUsed;
+    final slotsLeft =
+        used == null ? null : (entriesMax - used).clamp(0, entriesMax);
+    final canAddEntry = used == null || used < entriesMax;
 
     return SafeArea(
       bottom: false,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: CachedNetworkImage(
-                      imageUrl: _kLogoUrl,
+      child: RefreshIndicator(
+        color: _kOrange,
+        backgroundColor: _kCardBg,
+        displacement: 48,
+        onRefresh: onRefreshStats,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: CachedNetworkImage(
+                        imageUrl: _kLogoUrl,
                       height: 32,
                       fit: BoxFit.contain,
                       alignment: Alignment.centerLeft,
@@ -207,21 +399,26 @@ class _DashboardHomeTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 22),
-            _IncompleteEntryCard(
-              onResume: () {
-                Navigator.of(context).pushNamed(
-                  QualificationQuizPage.route,
-                );
-              },
+            // _IncompleteEntryCard(
+            //   onResume: () {
+            //     Navigator.of(context).pushNamed(
+            //       QualificationQuizPage.route,
+            //     );
+            //   },
+            // ),
+            // const SizedBox(height: 14),
+            _ShortlistedSection(
+              entries: shortlistedEntries,
+              loading: entriesLoading,
+              quizUserId: quizUserId,
             ),
-            const SizedBox(height: 14),
-            _ShortlistedCard(entryRef: shortlistedEntryRef),
             const SizedBox(height: 18),
             Row(
               children: [
                 Expanded(
                   child: _StatMiniCard(
-                    value: '$_kEntriesUsed',
+                    value:
+                        entriesLoading ? '…' : (used == null ? '—' : '$used'),
                     label: 'Entries Used',
                     valueColor: Colors.white,
                   ),
@@ -229,7 +426,9 @@ class _DashboardHomeTab extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _StatMiniCard(
-                    value: '$slotsLeft',
+                    value: entriesLoading
+                        ? '…'
+                        : (slotsLeft == null ? '—' : '$slotsLeft'),
                     label: 'Slots Left',
                     valueColor: Colors.white,
                   ),
@@ -237,7 +436,7 @@ class _DashboardHomeTab extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _StatMiniCard(
-                    value: '$_kShortlistedStat',
+                    value: entriesLoading ? '…' : '$shortlistedCount',
                     label: 'Shortlisted',
                     valueColor: _kShortlistGreen,
                   ),
@@ -287,37 +486,44 @@ class _DashboardHomeTab extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 28),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                gradient: const LinearGradient(
-                  colors: [_kOrange, _kOrangeDeep],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: _kOrangeGlow,
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(HomePage.route);
-                  },
+            Opacity(
+              opacity: canAddEntry ? 1 : 0.5,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(
-                      child: Text(
-                        'Add Another Entry →',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.2,
+                  gradient: const LinearGradient(
+                    colors: [_kOrange, _kOrangeDeep],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _kOrangeGlow,
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: canAddEntry
+                        ? () {
+                            Navigator.of(context).pushNamed(PaymentPage.route);
+                          }
+                        : null,
+                    borderRadius: BorderRadius.circular(28),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: Text(
+                          canAddEntry
+                              ? 'Add Another Entry →'
+                              : 'Entry Limit Reached',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
                         ),
                       ),
                     ),
@@ -327,7 +533,11 @@ class _DashboardHomeTab extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              '$_kEntriesUsed of $_kEntriesMax entries used · $slotsLeft remaining',
+              entriesLoading
+                  ? 'Loading entry stats…'
+                  : (used == null || slotsLeft == null
+                      ? 'Entry stats unavailable. Sign in to sync.'
+                      : '$used of $entriesMax entries used · $slotsLeft remaining'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: _kMuted.withValues(alpha: 0.85),
@@ -336,6 +546,7 @@ class _DashboardHomeTab extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
@@ -360,7 +571,6 @@ class _IncompleteEntryCard extends StatelessWidget {
         ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: Column(
@@ -426,17 +636,128 @@ class _IncompleteEntryCard extends StatelessWidget {
   }
 }
 
-class _ShortlistedCard extends StatelessWidget {
-  const _ShortlistedCard({required this.entryRef});
+/// Built only from [GET /api/MyEntries/Shortlisted].
+class _ShortlistedSection extends StatelessWidget {
+  const _ShortlistedSection({
+    required this.entries,
+    required this.loading,
+    required this.quizUserId,
+  });
 
-  final String entryRef;
+  final List<ShortlistedListEntry> entries;
+  final bool loading;
+  final int? quizUserId;
 
   @override
   Widget build(BuildContext context) {
+    if (loading && entries.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: _kCardBg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _kShortlistCardBorder.withValues(alpha: 0.9),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              "You're Shortlisted!",
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const LinearProgressIndicator(
+              minHeight: 3,
+              color: _kOrange,
+              backgroundColor: Color(0xFF1A2049),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (entries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          "You're Shortlisted!",
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.95),
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${entries.length} ${entries.length == 1 ? 'entry' : 'entries'}',
+          style: TextStyle(
+            color: _kMuted.withValues(alpha: 0.85),
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ...entries.map(
+          (e) => Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _ShortlistedEntryTile(
+              entry: e,
+              quizUserId: quizUserId,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ShortlistedEntryTile extends StatelessWidget {
+  const _ShortlistedEntryTile({
+    required this.entry,
+    required this.quizUserId,
+  });
+
+  final ShortlistedListEntry entry;
+  final int? quizUserId;
+
+  @override
+  Widget build(BuildContext context) {
+    final created = entry.createdAt;
+    final subtitle = created != null && created.isNotEmpty
+        ? 'Entry #${entry.entryId} · Shortlisted $created'
+        : 'Entry #${entry.entryId}';
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          final uid = quizUserId;
+          if (uid == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Sign in to view entry details.'),
+              ),
+            );
+            return;
+          }
+          Navigator.of(context).pushNamed(
+            ShortlistResultPage.route,
+            arguments: ShortlistResultRouteArgs(
+              userId: uid,
+              entryId: entry.entryId,
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(14),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -469,16 +790,16 @@ class _ShortlistedCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "You're Shortlisted!",
+                      'Shortlisted entry',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Entry #$entryRef · Top 0.01%',
+                      subtitle,
                       style: TextStyle(
                         color: _kMuted.withValues(alpha: 0.92),
                         fontSize: 12,
@@ -598,93 +919,606 @@ class _CountdownUnit extends StatelessWidget {
 }
 
 class _MyEntriesTab extends StatelessWidget {
-  const _MyEntriesTab();
+  const _MyEntriesTab({
+    required this.entriesUsed,
+    required this.entriesLoading,
+    required this.entriesMax,
+    required this.myEntries,
+    required this.quizUserId,
+    required this.onRefreshStats,
+  });
+
+  final int? entriesUsed;
+  final bool entriesLoading;
+  final int entriesMax;
+  final List<MyEntryListItem> myEntries;
+  final int? quizUserId;
+  final Future<void> Function() onRefreshStats;
 
   @override
   Widget build(BuildContext context) {
+    final listChildren = <Widget>[
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'My Entries',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Track your success',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border:
+                  Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            child: Text.rich(
+              TextSpan(
+                text: entriesLoading
+                    ? '… '
+                    : entriesUsed == null
+                        ? '— '
+                        : '$entriesUsed ',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+                children: [
+                  TextSpan(
+                    text: '/ $entriesMax',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 24),
+    ];
+
+    if (entriesLoading && myEntries.isEmpty) {
+      listChildren.addAll([
+        const LinearProgressIndicator(
+          minHeight: 3,
+          color: _kOrange,
+          backgroundColor: Color(0xFF1A2049),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          'Loading entries…',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.45),
+            fontSize: 13,
+          ),
+        ),
+      ]);
+    } else if (myEntries.isEmpty) {
+      listChildren.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 24),
+          child: Text(
+            entriesUsed == null
+                ? 'Sign in to see your competition entries.'
+                : 'No entries yet. Complete payment and the quiz to create your first entry.',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 14,
+              height: 1.45,
+            ),
+          ),
+        ),
+      );
+    } else {
+      for (final e in myEntries) {
+        final look = _MyEntryStatusLook.fromApi(e.status);
+        final uid = quizUserId;
+        listChildren.add(
+          _EntryRow(
+            status: look.label,
+            date: _formatMyEntryListDate(e.createdAt),
+            refNumber: e.entryId,
+            subtitle: _myEntryListSubtitle(e),
+            statusColor: look.statusColor,
+            statusBgColor: look.statusBgColor,
+            isShortlisted: look.cardHighlight,
+            onTap: uid == null
+                ? null
+                : () {
+                    Navigator.of(context).pushNamed(
+                      ShortlistResultPage.route,
+                      arguments: ShortlistResultRouteArgs(
+                        userId: uid,
+                        entryId: e.entryId,
+                      ),
+                    );
+                  },
+          ),
+        );
+      }
+    }
+
     return SafeArea(
       bottom: false,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.emoji_events_outlined,
-                size: 48,
-                color: _kMuted.withValues(alpha: 0.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'My Entries',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.95),
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Your submitted entries will appear here.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _kMuted.withValues(alpha: 0.85),
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-            ],
-          ),
+      child: RefreshIndicator(
+        color: _kOrange,
+        backgroundColor: _kCardBg,
+        displacement: 48,
+        onRefresh: onRefreshStats,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          children: listChildren,
         ),
       ),
     );
   }
 }
 
-class _AccountStubTab extends StatelessWidget {
-  const _AccountStubTab();
+class _EntryRow extends StatelessWidget {
+  const _EntryRow({
+    required this.status,
+    required this.date,
+    required this.refNumber,
+    required this.subtitle,
+    required this.statusColor,
+    required this.statusBgColor,
+    this.isShortlisted = false,
+    this.onTap,
+  });
+
+  final String status;
+  final String date;
+  final String refNumber;
+  final String subtitle;
+  final Color statusColor;
+  final Color statusBgColor;
+  final bool isShortlisted;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+    final card = Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isShortlisted
+            ? _kOrange.withValues(alpha: 0.05)
+            : _kCardBg.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isShortlisted
+              ? _kOrange.withValues(alpha: 0.3)
+              : Colors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                Icons.person_outline_rounded,
-                size: 48,
-                color: _kMuted.withValues(alpha: 0.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Account',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.95),
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusBgColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  status.toUpperCase(),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed(AccountPage.route);
-                },
-                child: const Text(
-                  'Manage account',
+              Text(
+                date,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text.rich(
+            TextSpan(
+              text: '# ',
+              style: TextStyle(
+                color: isShortlisted
+                    ? _kOrange.withValues(alpha: 0.8)
+                    : Colors.white.withValues(alpha: 0.3),
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
+              children: [
+                TextSpan(
+                  text: refNumber,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  subtitle,
                   style: TextStyle(
-                    color: _kOrange,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 12,
                   ),
                 ),
               ),
             ],
           ),
+        ],
+      ),
+    );
+
+    final padded = Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: onTap != null
+          ? Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: onTap,
+                child: card,
+              ),
+            )
+          : card,
+    );
+    return padded;
+  }
+}
+
+class _AccountTab extends StatelessWidget {
+  const _AccountTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        children: [
+          Container(
+            padding: const EdgeInsets.only(bottom: 24),
+            decoration: BoxDecoration(
+              border: Border(
+                  bottom:
+                      BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+            ),
+            child: Column(
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _kOrange.withValues(alpha: 0.2),
+                            blurRadius: 20,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [
+                            Colors.deepPurpleAccent,
+                            _kOrange,
+                            _kOrangeDeep
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            width: 2),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'JD',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Jordan Davies',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: Colors.greenAccent,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.greenAccent.withValues(alpha: 0.5),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Member since March 2026',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          const _SectionTitle(title: 'Account Details'),
+          _ActionRowGroup(
+            children: [
+              _ActionRow(
+                icon: Icons.email_outlined,
+                iconColor: Colors.white,
+                title: 'Email Address',
+                subtitle: 'jordan@example.com',
+                onTap: () {},
+              ),
+              _ActionRow(
+                icon: Icons.location_on_outlined,
+                iconColor: Colors.white,
+                title: 'Location',
+                subtitle: 'United Kingdom',
+                showDivider: false,
+                onTap: () {},
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const _SectionTitle(title: 'Settings'),
+          _ActionRowGroup(
+            children: [
+              _ActionRow(
+                icon: Icons.settings_outlined,
+                iconColor: _kOrange,
+                title: 'Edit Profile',
+                showChevron: true,
+                onTap: () {},
+              ),
+              _ActionRow(
+                icon: Icons.description_outlined,
+                iconColor: _kMutedPurple,
+                title: 'Terms & Privacy',
+                showChevron: true,
+                showDivider: false,
+                onTap: () {},
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          InkWell(
+            onTap: () async {
+              await provideAuthRepository().signOut();
+              if (context.mounted) {
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/', (route) => false);
+              }
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(20),
+                border:
+                    Border.all(color: Colors.redAccent.withValues(alpha: 0.2)),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'Sign Out',
+                style: TextStyle(
+                  color: Color(0xFFFCA5A5),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title});
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.4),
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1,
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionRowGroup extends StatelessWidget {
+  const _ActionRowGroup({required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        children: children,
+      ),
+    );
+  }
+}
+
+class _ActionRow extends StatelessWidget {
+  const _ActionRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    this.subtitle,
+    this.showChevron = false,
+    this.showDivider = true,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String? subtitle;
+  final bool showChevron;
+  final bool showDivider;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          border: showDivider
+              ? Border(
+                  bottom:
+                      BorderSide(color: Colors.white.withValues(alpha: 0.05)))
+              : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (showChevron)
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: 0.2),
+                size: 24,
+              ),
+          ],
         ),
       ),
     );
@@ -768,15 +1602,15 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               size: 26,
-              color: selected
-                  ? activeColor
-                  : _kMuted.withValues(alpha: 0.45),
+              color: selected ? activeColor : _kMuted.withValues(alpha: 0.45),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: selected ? _kActiveTabLabel : _kMuted.withValues(alpha: 0.5),
+                color: selected
+                    ? _kActiveTabLabel
+                    : _kMuted.withValues(alpha: 0.5),
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),

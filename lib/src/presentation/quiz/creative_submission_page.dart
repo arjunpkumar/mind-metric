@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mind_metric/src/data/core/repository_provider.dart';
+import 'package:mind_metric/src/presentation/dashboard/dashboard_page.dart';
 import 'package:mind_metric/src/presentation/quiz/entry_submitted_page.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
 
@@ -59,11 +61,17 @@ class _CreativeSubmissionPageState extends State<CreativeSubmissionPage> {
   Timer? _timer;
   int _secondsLeft = _kSecondsTotal;
   int _wordCount = 0;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(_onTextChanged);
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       if (_secondsLeft <= 1) {
@@ -72,7 +80,13 @@ class _CreativeSubmissionPageState extends State<CreativeSubmissionPage> {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute<void>(
             builder: (context) => QuizTimeExpiredPage(
-              onReturnToCompetitionHome: () => Navigator.of(context).pop(),
+              onReturnToCompetitionHome: () {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  DashboardPage.route,
+                  (route) => false,
+                  arguments: const DashboardRouteArgs(),
+                );
+              },
             ),
           ),
         );
@@ -97,24 +111,55 @@ class _CreativeSubmissionPageState extends State<CreativeSubmissionPage> {
   }
 
   bool get _canSubmit =>
-      _secondsLeft > 0 && _wordCount == _kRequiredWords;
+      _secondsLeft > 0 && _wordCount == _kRequiredWords && !_isSubmitting;
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_canSubmit) return;
+    final text = _controller.text.trim();
     _timer?.cancel();
-    final ref =
-        'TBSC-${DateTime.now().year}-${Random().nextInt(1000000).toString().padLeft(6, '0')}';
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        settings: const RouteSettings(name: EntrySubmittedPage.route),
-        builder: (context) => EntrySubmittedPage(
-          wordCount: _wordCount,
-          // ignore: avoid_redundant_argument_values — keep in sync if _kRequiredWords changes
-          wordTarget: _kRequiredWords,
-          entryReference: ref,
+    setState(() => _isSubmitting = true);
+    try {
+      final userId = await provideAuthRepository().resolveQuizSubmitUserId();
+      if (userId == null) {
+        throw Exception(
+          'Unable to submit entry. Sign in again to refresh your account.',
+        );
+      }
+      final ref = await provideQuizRepository().submitCreativeEntry(
+        userId: userId,
+        userText: text,
+      );
+      if (!mounted) return;
+      final fallbackRef =
+          'TBSC-${DateTime.now().year}-${Random().nextInt(1000000).toString().padLeft(6, '0')}';
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          settings: const RouteSettings(name: EntrySubmittedPage.route),
+          builder: (context) => EntrySubmittedPage(
+            wordCount: _wordCount,
+            // ignore: avoid_redundant_argument_values — keep in sync if _kRequiredWords changes
+            wordTarget: _kRequiredWords,
+            entryReference: (ref != null && ref.isNotEmpty) ? ref : fallbackRef,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e is Exception
+                ? e.toString().replaceFirst('Exception: ', '')
+                : 'Unable to submit entry. Please try again.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      if (_secondsLeft > 0) {
+        _startTimer();
+      }
+      setState(() => _isSubmitting = false);
+    }
   }
 
   @override
@@ -299,7 +344,8 @@ class _CreativeSubmissionPageState extends State<CreativeSubmissionPage> {
                           },
                           child: Actions(
                             actions: <Type, Action<Intent>>{
-                              _BlockPasteIntent: CallbackAction<_BlockPasteIntent>(
+                              _BlockPasteIntent:
+                                  CallbackAction<_BlockPasteIntent>(
                                 onInvoke: (_) => null,
                               ),
                               PasteTextIntent: CallbackAction<PasteTextIntent>(
@@ -309,7 +355,7 @@ class _CreativeSubmissionPageState extends State<CreativeSubmissionPage> {
                             child: TextField(
                               controller: _controller,
                               maxLines: 6,
-                              enabled: _secondsLeft > 0,
+                              enabled: _secondsLeft > 0 && !_isSubmitting,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -346,19 +392,17 @@ class _CreativeSubmissionPageState extends State<CreativeSubmissionPage> {
                                   ),
                                 ),
                               ),
-                              contextMenuBuilder:
-                                  (context, editableTextState) {
-                                final items = editableTextState
-                                    .contextMenuButtonItems
-                                    .where(
-                                      (ContextMenuButtonItem item) =>
-                                          item.type !=
-                                          ContextMenuButtonType.paste,
-                                    )
-                                    .toList();
+                              contextMenuBuilder: (context, editableTextState) {
+                                final items =
+                                    editableTextState.contextMenuButtonItems
+                                        .where(
+                                          (ContextMenuButtonItem item) =>
+                                              item.type !=
+                                              ContextMenuButtonType.paste,
+                                        )
+                                        .toList();
                                 return AdaptiveTextSelectionToolbar.buttonItems(
-                                  anchors:
-                                      editableTextState.contextMenuAnchors,
+                                  anchors: editableTextState.contextMenuAnchors,
                                   buttonItems: items,
                                 );
                               },
@@ -395,17 +439,26 @@ class _CreativeSubmissionPageState extends State<CreativeSubmissionPage> {
                               child: InkWell(
                                 onTap: _canSubmit ? _submit : null,
                                 borderRadius: BorderRadius.circular(28),
-                                child: const Padding(
+                                child: Padding(
                                   padding: EdgeInsets.symmetric(vertical: 16),
                                   child: Center(
-                                    child: Text(
-                                      'Submit Entry →',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
+                                    child: _isSubmitting
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.5,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Submit Entry →',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
                                   ),
                                 ),
                               ),
@@ -439,7 +492,8 @@ class _CreativeSubmissionPageState extends State<CreativeSubmissionPage> {
                                   'Submission blocked unless word count is '
                                   'exactly $_kRequiredWords.',
                                   style: TextStyle(
-                                    color: _kWarningText.withValues(alpha: 0.95),
+                                    color:
+                                        _kWarningText.withValues(alpha: 0.95),
                                     fontSize: 13,
                                     height: 1.4,
                                   ),

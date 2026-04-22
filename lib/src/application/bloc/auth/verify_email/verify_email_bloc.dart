@@ -85,7 +85,7 @@ class VerifyEmailBloc extends Bloc<VerifyEmailEvent, VerifyEmailState> {
       return;
     }
     try {
-      await _repository.requestVerificationCode(email: email);
+      await _repository.resendOTP(email: email);
       emit(
         state.copyWith(
           resendCooldownSeconds: _resendCooldown,

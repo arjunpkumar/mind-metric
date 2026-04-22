@@ -44,7 +44,7 @@ NotificationUtil provideNotificationUtil() {
 }
 
 LoginBloc provideLoginBloc() {
-  return LoginBloc(loginRepository: provideLoginRepository());
+  return LoginBloc(authRepository: provideAuthRepository());
 }
 
 AccountBloc provideAccountBloc() {

@@ -12,15 +12,9 @@ class SplashBloc extends BaseBloc<SplashEvent, SplashState, SplashUIEvent> {
       : super(SplashState()) {
     on<RedirectPage>(
       (event, emit) async {
-        final authToken = await authRepository.getActiveToken();
-        final user = await userRepository.getCurrentUser();
         await Future.delayed(const Duration(milliseconds: 2000), () {});
-        if (user != null && authToken != null) {
-          emit(state.copyWith(redirectToOtp: true));
-        } else {
-          await authRepository.signOut();
-          emit(state.copyWith(redirectToLogin: true));
-        }
+        await authRepository.signOut();
+        emit(state.copyWith(redirectToLogin: true));
       },
     );
   }

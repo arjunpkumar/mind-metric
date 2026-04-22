@@ -33,7 +33,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.thinkpalm.flutterbase"
-    compileSdkVersion 35
+    compileSdkVersion 36
     ndkVersion flutter.ndkVersion
 
     kotlinOptions {
@@ -53,9 +53,9 @@ android {
 
     defaultConfig {
         applicationId "com.thinkpalm.flutterbase"
-        minSdkVersion 23
-        compileSdkVersion 35
-        targetSdkVersion 35
+        minSdkVersion flutter.minSdkVersion
+        compileSdkVersion 36
+        targetSdkVersion 36
         multiDexEnabled true
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

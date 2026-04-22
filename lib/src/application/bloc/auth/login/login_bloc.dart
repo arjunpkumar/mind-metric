@@ -1,18 +1,18 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mind_metric/src/application/bloc/auth/login/login_event.dart';
 import 'package:mind_metric/src/application/bloc/auth/login/login_state.dart';
-import 'package:mind_metric/src/data/auth/login_repository.dart';
+import 'package:mind_metric/src/data/auth/auth_repository.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  LoginBloc({required LoginRepository loginRepository})
-      : _loginRepository = loginRepository,
+  LoginBloc({required AuthRepository authRepository})
+      : _authRepository = authRepository,
         super(LoginState.initial()) {
     on<LoginEmailChanged>(_onEmailChanged);
     on<LoginPasswordChanged>(_onPasswordChanged);
     on<LoginSubmitted>(_onSubmitted);
   }
 
-  final LoginRepository _loginRepository;
+  final AuthRepository _authRepository;
 
   static final RegExp _emailPattern = RegExp(
     r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
@@ -73,15 +73,15 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     );
 
     try {
-      await _loginRepository.logIn(
+      await _authRepository.loginWithDio(
         email: state.email.trim(),
         password: state.password,
       );
       emit(state.copyWith(status: LoginFormStatus.submissionSuccess));
     } catch (e) {
       final message = e is Exception
-          ? e.toString().replaceFirst('Exception: ', '')
-          : 'Something went wrong';
+          ? e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '')
+          : 'Login failed';
       emit(
         state.copyWith(
           status: LoginFormStatus.submissionFailure,

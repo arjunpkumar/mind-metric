@@ -19,9 +19,13 @@ const bool kBypassVerifyEmailNetwork = true;
 /// (the mock no longer fails at random). Set to `false` when the signup API is wired.
 const bool kBypassAccountCreationNetwork = true;
 
-/// When `true`, [LoginRepository.logIn] succeeds without a real API (mock no
+/// When `true`, [AuthRepository.logIn] succeeds without a real API (mock no
 /// longer fails at random). Set to `false` when auth/login API is wired.
 const bool kBypassLoginNetwork = true;
+
+/// MindMetric REST API host (login, register, quiz, verify-email OTP, etc.).
+const String kMindMetricApiBaseUrl = 'http://172.27.13.12:5062'; // vimal
+// const String kMindMetricApiBaseUrl = 'http://172.27.13.182:5062'; // aadra
 
 const whiteListDocumentExtensions = [
   '.pdf',
@@ -274,8 +278,7 @@ class APIEndpoints {
       '${_restRoot}auth/email/send-verification-code';
 
   /// POST JSON: `{ "email": "<address>", "code": "<6-digit>" }` — confirms the code.
-  static String get verifyEmailCodeUrl =>
-      '${_restRoot}auth/email/verify-code';
+  static String get verifyEmailCodeUrl => '${_restRoot}auth/email/verify-code';
 }
 
 class NetworkClient {

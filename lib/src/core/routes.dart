@@ -17,6 +17,8 @@ import 'package:mind_metric/src/presentation/quiz/quiz_success_page.dart';
 import 'package:mind_metric/src/presentation/quiz/quiz_time_expired_page.dart';
 import 'package:mind_metric/src/presentation/splash/splash_page.dart';
 import 'package:mind_metric/src/presentation/web_view/web_view_page.dart';
+import 'package:mind_metric/src/presentation/payment/payment_page.dart';
+import 'package:mind_metric/src/presentation/result/shortlist_result_page.dart';
 
 final Map<String, Widget Function(BuildContext context)> routes = {
   SplashPage.route: (_) => BlocProvider(
@@ -25,6 +27,7 @@ final Map<String, Widget Function(BuildContext context)> routes = {
       ),
   LoginPage.route: (_) => const LoginPage(),
   LandingPage.route: (_) => const LandingPage(),
+  PaymentPage.route: (_) => const PaymentPage(),
   AccountPage.route: (_) => const AccountPage(),
   HomePage.route: (_) => BlocProvider(
         create: (_) => HomeBloc(),
@@ -35,8 +38,19 @@ final Map<String, Widget Function(BuildContext context)> routes = {
   CreativeSubmissionPage.route: (_) => const CreativeSubmissionPage(),
   EntrySubmittedPage.route: (_) => const EntrySubmittedPage(),
   QuizTimeExpiredPage.route: (context) => QuizTimeExpiredPage(
-        onReturnToCompetitionHome: () => Navigator.of(context).pop(),
+        onReturnToCompetitionHome: () {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            DashboardPage.route,
+            (route) => false,
+            arguments: const DashboardRouteArgs(),
+          );
+        },
       ),
+  ShortlistResultPage.route: (context) {
+    final raw = ModalRoute.of(context)?.settings.arguments;
+    final args = raw is ShortlistResultRouteArgs ? raw : null;
+    return ShortlistResultPage(routeArgs: args);
+  },
 };
 
 Route<dynamic>? generatedRoutes(RouteSettings settings) {
@@ -82,6 +96,7 @@ Route<dynamic>? generatedRoutes(RouteSettings settings) {
         builder: (_) => DashboardPage(
           userName: a.userName,
           shortlistedEntryRef: a.shortlistedEntryRef,
+          initialTabIndex: a.initialTabIndex,
         ),
       );
   }
