@@ -8,6 +8,7 @@ import 'package:mind_metric/src/presentation/account/account_page.dart';
 import 'package:mind_metric/src/presentation/auth/login/login_page.dart';
 import 'package:mind_metric/src/presentation/auth/verify_email/verify_email_page.dart';
 import 'package:mind_metric/src/presentation/dashboard/dashboard_page.dart';
+import 'package:mind_metric/src/presentation/entry_eligibility/entry_eligibility_page.dart';
 import 'package:mind_metric/src/presentation/home/home_page.dart';
 import 'package:mind_metric/src/presentation/landing/landing_page.dart';
 import 'package:mind_metric/src/presentation/quiz/creative_submission_page.dart';
@@ -98,6 +99,34 @@ Route<dynamic>? generatedRoutes(RouteSettings settings) {
           shortlistedEntryRef: a.shortlistedEntryRef,
           initialTabIndex: a.initialTabIndex,
         ),
+      );
+    case EntryEligibilityPage.route:
+      final raw = settings.arguments;
+      final eligibilityArgs = raw is EntryEligibilityRouteArgs
+          ? raw
+          : const EntryEligibilityRouteArgs.postLogin();
+      if (eligibilityArgs.isPostLogin) {
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => EntryEligibilityPage(
+            isPostLogin: true,
+            userName: eligibilityArgs.userName,
+          ),
+        );
+      }
+      final bloc = eligibilityArgs.accountBloc;
+      if (bloc != null) {
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => BlocProvider<AccountBloc>.value(
+            value: bloc,
+            child: const EntryEligibilityPage(),
+          ),
+        );
+      }
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => const EntryEligibilityPage(isPostLogin: true),
       );
   }
   return null;
