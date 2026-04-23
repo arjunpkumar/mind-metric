@@ -24,7 +24,8 @@ const bool kBypassAccountCreationNetwork = true;
 const bool kBypassLoginNetwork = true;
 
 /// MindMetric REST API host (login, register, quiz, verify-email OTP, etc.).
-const String kMindMetricApiBaseUrl = 'http://172.27.13.12:5062'; // vimal
+// const String kMindMetricApiBaseUrl = 'http://172.27.13.12:5062'; // vimal
+const String kMindMetricApiBaseUrl = 'http://172.27.14.196:5062'; // vimal
 // const String kMindMetricApiBaseUrl = 'http://172.27.13.182:5062'; // aadra
 
 const whiteListDocumentExtensions = [
